@@ -1,2 +1,8 @@
 /.vagrant
 /grpc
+
+*.grpc.pb.o
+*.grpc.pb.h
+*.pb.h
+*.pb.o
+*.o
