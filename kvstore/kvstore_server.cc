@@ -2,6 +2,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 #include <grpcpp/grpcpp.h>
 
@@ -16,43 +17,50 @@ using grpc::ServerBuilder;
 using grpc::ServerContext;
 using grpc::ServerReaderWriter;
 using grpc::Status;
+
 using kvstore::GetReply;
 using kvstore::GetRequest;
 using kvstore::KeyValueStore;
+using kvstore::PutReply;
+using kvstore::PutRequest;
+using kvstore::RemoveReply;
+using kvstore::RemoveRequest;
 
-struct kv_pair
-{
-    const char *key;
-    const char *value;
-};
-
-// static const kv_pair kvs_map[] = {
-//     {"key1", "value1"},
-//     {"key2", "value2"},
-//     {"key3", "value3"},
-//     {"key4", "value4"},
-//     {"key5", "value5"},
-// };
-
-// const char *get_value_from_map(const char *key)
-// {
-//     for (size_t i = 0; i < sizeof(kvs_map) / sizeof(kv_pair); ++i)
-//     {
-//         if (strcmp(key, kvs_map[i].key) == 0)
-//         {
-//             return kvs_map[i].value;
-//         }
-//     }
-//     return "";
-// }
+std::unordered_map<std::string, std::string> umap;
 
 // Logic and data behind the server's behavior.
 class KeyValueStoreServiceImpl final : public KeyValueStore::Service
 {
 
-    //Status put (PutRequest) returns (PutReply) {}
-    //Status get(stream GetRequest) returns(stream GetReply) {}
-    //Status remove(RemoveRequest) returns(RemoveReply) {}
+    Status put(ServerContext *context, const PutRequest *putrequest,
+               PutReply *putreply) override
+    {
+        umap.insert(std::make_pair(putrequest->key(), putrequest->value()));
+        if (umap.find(putrequest->key()) == umap.end())
+            return Status::CANCELLED;
+        return Status::OK;
+    }
+
+    Status get(ServerContext *context, ServerReaderWriter<GetReply, GetRequest> *stream)
+    {
+        GetRequest request;
+        while (stream->Read(&request))
+        {
+            GetReply reply;
+            reply.set_value(umap[request.key()]);
+            stream->Write(reply);
+        }
+        return Status::OK;
+    }
+
+    Status remove(ServerContext *context, const RemoveRequest *removerequest,
+                  RemoveReply *removereply) override
+    {
+        umap.erase(removerequest->key());
+        if (umap.find(removerequest->key()) == umap.end())
+            return Status::OK;
+        return Status::CANCELLED;
+    }
 };
 
 void RunServer()

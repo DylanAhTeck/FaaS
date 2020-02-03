@@ -1,5 +1,6 @@
 /.vagrant
 /grpc
+/googletest
 
 *.grpc.pb.o
 *.grpc.pb.h
