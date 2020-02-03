@@ -1,6 +1,9 @@
 #include "kvstore.grpc.pb.h"
 #include "../googletest/googletest/include/gtest/gtest.h"
 #include <grpcpp/grpcpp.h>
+#include "kvstore_mock.grpc.pb.h"
+
+#include "../grpc/test/core/util/port.h"
 
 using grpc::Server;
 using grpc::ServerBuilder;
@@ -8,9 +11,14 @@ using grpc::ServerContext;
 using grpc::ServerReaderWriter;
 using grpc::Status;
 
+using kvstore::KeyValueStore;
+
+//LOOK AT https://github.com/grpc/grpc/blob/master/test/cpp/end2end/mock_test.cc FOR REFERENCE
+
 // The fixture for testing class Foo.
 class KvstoreServerTests : public ::testing::Test
 {
+
 protected:
     // You can remove any or all of the following functions if their bodies would
     // be empty.
@@ -34,11 +42,9 @@ protected:
         // before each test).
     }
 
-    void TearDown() override
-    {
-        // Code here will be called immediately after each test (right
-        // before the destructor).
-    }
+    // Code here will be called immediately after each test (right
+    // before the destructor).
+    void TearDown() override {}
 
     // Class members declared here can be used by all tests in the test suite
     // for Foo.

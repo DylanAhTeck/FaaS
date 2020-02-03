@@ -142,10 +142,11 @@ int main(int argc, char **argv)
     KeyValueStoreClient kvclient(grpc::CreateChannel(
         "localhost:50001", grpc::InsecureChannelCredentials()));
 
-    // kvclient.get("hep");
-    // kvclient.put("hep", "hi");
-    // kvclient.remove("hep");
-    // kvclient.get("hep");
+    kvclient.get("hep");
+    kvclient.put("hi", "hi");
+    kvclient.get("hi");
+    kvclient.remove("hep");
+    kvclient.get("hep");
 
     return 0;
 }
