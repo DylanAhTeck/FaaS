@@ -36,10 +36,13 @@ PROTOS_PATH = ../protos
 
 vpath %.proto $(PROTOS_PATH)
 
-all: system-check kvstore_server
+all: system-check kvstore_server client
 
 
 kvstore_server: kvstore.pb.o kvstore.grpc.pb.o kvstore_server.o #helper.o
+	$(CXX) $^ $(LDFLAGS) -o $@
+
+client: kvstore.pb.o kvstore.grpc.pb.o client.o 
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 %.grpc.pb.cc: %.proto
