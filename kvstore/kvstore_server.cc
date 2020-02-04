@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #include <grpcpp/grpcpp.h>
+#include "kvstore_server.h"
 
 // #ifdef BAZEL_BUILD
 // #include "examples/protos/keyvaluestore.grpc.pb.h"
@@ -12,56 +13,35 @@
 #include "kvstore.grpc.pb.h"
 //#endif
 
-using grpc::Server;
-using grpc::ServerBuilder;
-using grpc::ServerContext;
-using grpc::ServerReaderWriter;
-using grpc::Status;
-
-using kvstore::GetReply;
-using kvstore::GetRequest;
-using kvstore::KeyValueStore;
-using kvstore::PutReply;
-using kvstore::PutRequest;
-using kvstore::RemoveReply;
-using kvstore::RemoveRequest;
-
-std::unordered_map<std::string, std::string> umap;
-
-// Logic and data behind the server's behavior.
-class KeyValueStoreServiceImpl final : public KeyValueStore::Service
+Status KeyValueStoreServiceImpl::put(ServerContext *context, const PutRequest *putrequest,
+                                     PutReply *putreply)
 {
-
-    Status put(ServerContext *context, const PutRequest *putrequest,
-               PutReply *putreply) override
-    {
-        umap.insert(std::make_pair(putrequest->key(), putrequest->value()));
-        if (umap.find(putrequest->key()) == umap.end())
-            return Status::CANCELLED;
-        return Status::OK;
-    }
-
-    Status get(ServerContext *context, ServerReaderWriter<GetReply, GetRequest> *stream)
-    {
-        GetRequest request;
-        while (stream->Read(&request))
-        {
-            GetReply reply;
-            reply.set_value(umap[request.key()]);
-            stream->Write(reply);
-        }
-        return Status::OK;
-    }
-
-    Status remove(ServerContext *context, const RemoveRequest *removerequest,
-                  RemoveReply *removereply) override
-    {
-        umap.erase(removerequest->key());
-        if (umap.find(removerequest->key()) == umap.end())
-            return Status::OK;
+    umap_.insert(std::make_pair(putrequest->key(), putrequest->value()));
+    if (umap_.find(putrequest->key()) == umap_.end())
         return Status::CANCELLED;
+    return Status::OK;
+}
+
+Status KeyValueStoreServiceImpl::get(ServerContext *context, ServerReaderWriter<GetReply, GetRequest> *stream)
+{
+    GetRequest request;
+    while (stream->Read(&request))
+    {
+        GetReply reply;
+        reply.set_value(umap_[request.key()]);
+        stream->Write(reply);
     }
-};
+    return Status::OK;
+}
+
+Status KeyValueStoreServiceImpl::remove(ServerContext *context, const RemoveRequest *removerequest,
+                                        RemoveReply *removereply)
+{
+    umap_.erase(removerequest->key());
+    if (umap_.find(removerequest->key()) == umap_.end())
+        return Status::OK;
+    return Status::CANCELLED;
+}
 
 void RunServer()
 {
