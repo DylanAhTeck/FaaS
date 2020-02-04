@@ -1,6 +1,7 @@
 /.vagrant
 /grpc
 /googletest
+/.vscode
 
 *.grpc.pb.o
 *.grpc.pb.h
