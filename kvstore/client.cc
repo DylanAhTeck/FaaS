@@ -29,16 +29,7 @@ void KeyValueStoreClient::put(const std::string &key, const std::string &value)
 
     // Act upon its status.
     if (status.ok())
-    {
-        std::cout << "PUT" << std::endl;
-        //return reply.message();
-    }
-    else
-    {
-        //   std::cout << status.error_code() << ": " << status.error_message()
-        //             << std::endl;
-        //   return "RPC failed";
-    }
+        std::cout << "PUT SUCCESFUL" << std::endl;
 }
 
 void KeyValueStoreClient::remove(const std::string &key)
@@ -59,10 +50,7 @@ void KeyValueStoreClient::remove(const std::string &key)
 
     // Act upon its status.
     if (status.ok())
-    {
-        std::cout << "REMOVED" << std::endl;
-        //return reply.message();
-    }
+        std::cout << "REMOVE SUCCESFUL" << std::endl;
 }
 
 void KeyValueStoreClient::get(const std::string &key)
@@ -83,12 +71,8 @@ void KeyValueStoreClient::get(const std::string &key)
 
     stream->WritesDone();
     Status status = stream->Finish();
-    if (!status.ok())
-    {
-        std::cout << status.error_code() << ": " << status.error_message()
-                  << std::endl;
-        std::cout << "RPC failed";
-    }
+    if (status.ok())
+        std::cout << "GET SUCCESFUL" << std::endl;
 }
 
 int main(int argc, char **argv)
@@ -96,6 +80,7 @@ int main(int argc, char **argv)
     KeyValueStoreClient kvclient(grpc::CreateChannel(
         "localhost:50001", grpc::InsecureChannelCredentials()));
 
+    //Random order of functions for quick initial test
     kvclient.get("hep");
     kvclient.put("hi", "hi");
     kvclient.get("hi");
