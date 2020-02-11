@@ -1,9 +1,3 @@
-#include <iostream>
-#include <memory>
-#include <string>
-#include <vector>
-#include <unordered_map>
-
 #include <grpcpp/grpcpp.h>
 #include "func_server.h"
 
