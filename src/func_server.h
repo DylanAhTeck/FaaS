@@ -21,7 +21,7 @@ using func::HookReply;
 using func::HookRequest;
 using func::UnhookReply;
 using func::UnhookRequest;
-
+  
 class FuncServiceImpl final : public FuncService::Service
 {
     //Allows a service to specify a function
