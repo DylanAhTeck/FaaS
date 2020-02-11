@@ -8,7 +8,7 @@
 
 //#include "../kvstore/kvstore.grpc.pb.h"
 #include "kvstore.grpc.pb.h"
-#include "client.h"
+#include "kvstore_client.h"
 
 void KeyValueStoreClient::put(const std::string &key, const std::string &value)
 {
@@ -83,9 +83,10 @@ int main(int argc, char **argv)
     //Random order of functions for quick initial test
     kvclient.get("hep");
     kvclient.put("hi", "hi");
+    kvclient.put("hi", "hello");
     kvclient.get("hi");
-    kvclient.remove("hep");
-    kvclient.get("hep");
+    kvclient.remove("hi");
+    kvclient.get("hi");
 
     return 0;
 }

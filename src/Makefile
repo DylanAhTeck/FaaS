@@ -36,13 +36,19 @@ PROTOS_PATH = ../protos
 
 vpath %.proto $(PROTOS_PATH)
 
-all: system-check kvstore_server client
+all: system-check kvstore_server kvstore_client func_server func_client
 
 
 kvstore_server: kvstore.pb.o kvstore.grpc.pb.o kvstore_server.o #helper.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
-client: kvstore.pb.o kvstore.grpc.pb.o client.o 
+kvstore_client: kvstore.pb.o kvstore.grpc.pb.o kvstore_client.o 
+	$(CXX) $^ $(LDFLAGS) -o $@
+
+func_server: func.pb.o func.grpc.pb.o func_server.o #helper.o
+	$(CXX) $^ $(LDFLAGS) -o $@
+
+func_client: func.pb.o func.grpc.pb.o func_client.o 
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 %.grpc.pb.cc: %.proto
@@ -52,7 +58,7 @@ client: kvstore.pb.o kvstore.grpc.pb.o client.o
 	$(PROTOC) -I $(PROTOS_PATH) --cpp_out=. $<
 
 clean:
-	rm -f *.o *.pb.cc *.pb.h kvstore_server client
+	rm -f *.o *.pb.cc *.pb.h kvstore_server kvstore_client func_server func_client
 
 
 # The following is to test your system and ensure a smoother experience.
