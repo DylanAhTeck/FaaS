@@ -30,11 +30,11 @@ using kvstore::RemoveRequest;
 
 class KeyValueStoreClient
 {
+
 public:
     //Initializes client with function stubs
     KeyValueStoreClient(std::shared_ptr<Channel> channel)
         : stub_(KeyValueStore::NewStub(channel)) {}
-
     //Sends PUT request with key,value variables to call kvstore_server API
     //Receives Status::OK from return status if successful
     void put(const std::string &key, const std::string &value);

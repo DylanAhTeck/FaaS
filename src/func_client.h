@@ -28,6 +28,14 @@ using func::HookRequest;
 using func::UnhookReply;
 using func::UnhookRequest;
 
+struct Payload : google::protobuf::Message
+{
+    std::string username;
+    std::string text;
+    int warbleid;
+    std::string usertofollow;
+};
+
 class FuncClient
 {
 public:
@@ -49,12 +57,4 @@ public:
 
 private:
     std::unique_ptr<FuncService::Stub> stub_;
-};
-
-struct Payload
-{
-    std::string username;
-    std::string text;
-    int warbleid;
-    std::string usertofollow;
 };
