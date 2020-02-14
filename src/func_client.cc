@@ -46,10 +46,16 @@ void FuncClient::unhook(const int event_type)
 
 void FuncClient::event(const int event_type, const Payload &p)
 {
+
     // Data we are sending to the server.
+
+    //TEST THIS WORKS
+    google::protobuf::Any payload;
+    payload.PackFrom(p);
+
     EventRequest request;
     request.set_event_type(event_type);
-    request.set_allocated_payload(p);
+    request.set_allocated_payload(&payload);
 
     // Container for the data we expect from the server.
     EventReply reply;

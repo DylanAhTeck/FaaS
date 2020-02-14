@@ -36,7 +36,7 @@ PROTOS_PATH = ../protos
 
 vpath %.proto $(PROTOS_PATH)
 
-all: system-check kvstore_server kvstore_client func_server func_client
+all: system-check kvstore_server kvstore_client func_server func_client warble_server
 
 
 kvstore_server: kvstore.pb.o kvstore.grpc.pb.o kvstore_server.o #helper.o
@@ -51,14 +51,17 @@ func_server: func.pb.o func.grpc.pb.o func_server.o #helper.o
 func_client: func.pb.o func.grpc.pb.o func_client.o 
 	$(CXX) $^ $(LDFLAGS) -o $@
 
+warble_server: warble.pb.o warble.grpc.pb.o warble_server.o #helper.o
+	$(CXX) $^ $(LDFLAGS) -o $@
+
 %.grpc.pb.cc: %.proto
-	$(PROTOC) -I $(PROTOS_PATH) --grpc_out=generate_mock_code=true:. --plugin=protoc-gen-grpc=$(GRPC_CPP_PLUGIN_PATH) $<
+	$(PROTOC) -I $(PROTOS_PATH) --grpc_out=. --plugin=protoc-gen-grpc=$(GRPC_CPP_PLUGIN_PATH) $<
 
 %.pb.cc: %.proto
 	$(PROTOC) -I $(PROTOS_PATH) --cpp_out=. $<
 
 clean:
-	rm -f *.o *.pb.cc *.pb.h kvstore_server kvstore_client func_server func_client
+	rm -f *.o *.pb.cc *.pb.h kvstore_server kvstore_client func_server func_client warble_server
 
 
 # The following is to test your system and ensure a smoother experience.
