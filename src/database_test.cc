@@ -1,26 +1,5 @@
-#include "kvstore.grpc.pb.h"
+#include "database.h"
 
-//#include "../googletest/googletest/include/gtest/gtest.h"
-#include <gtest/gtest.h>
-#include <grpcpp/grpcpp.h>
-
-#include "../grpc/test/core/util/port.h"
-
-#include "kvstore_client.h"
-#include "kvstore_server.h"
-#include "kvstore.grpc.pb.h"
-
-using grpc::Server;
-using grpc::ServerBuilder;
-using grpc::ServerContext;
-using grpc::ServerReaderWriter;
-using grpc::Status;
-
-using kvstore::KeyValueStore;
-
-//LOOK AT https://github.com/grpc/grpc/blob/master/test/cpp/end2end/mock_test.cc FOR REFERENCE
-
-// The fixture for testing class Foo.
 class KvstoreServerTests : public ::testing::Test
 {
 

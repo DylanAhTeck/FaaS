@@ -36,16 +36,16 @@ public:
     KeyValueStoreClient(std::shared_ptr<Channel> channel)
         : stub_(KeyValueStore::NewStub(channel)) {}
     //Sends PUT request with key,value variables to call kvstore_server API
-    //Receives Status::OK from return status if successful
-    void put(const std::string &key, const std::string &value);
+    //Returns true if remove was successful
+    bool put(const std::string &key, const std::string &value);
 
     //Sends REMOVE request with key variable to call kvstore_server API
-    //Receives Status::OK from return status if successful
-    void remove(const std::string &key);
+    //Returns true if remove was succesful
+    bool remove(const std::string &key);
 
-    //Sends REMOVE request with key variable to call kvstore_server API
-    //Receives value via status reply if get is succesful
-    void get(const std::string &key);
+    //Returns a previously stored value or values under that key or NULL if the key
+    //is not present in the store
+    std::string get(const std::string &key);
 
 private:
     std::unique_ptr<KeyValueStore::Stub> stub_;

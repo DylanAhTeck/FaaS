@@ -36,8 +36,11 @@ PROTOS_PATH = ../protos
 
 vpath %.proto $(PROTOS_PATH)
 
-all: system-check kvstore_server kvstore_client func_server func_client warble_server
+all: system-check kvstore_server kvstore_client func_server func_client warble_server kvstore_server_tests database
 
+
+kvstore_server_tests: kvstore_server_tests.o 
+	$(CXX) $^ $(LDFLAGS) -o $@
 
 kvstore_server: kvstore.pb.o kvstore.grpc.pb.o kvstore_server.o #helper.o
 	$(CXX) $^ $(LDFLAGS) -o $@
@@ -54,6 +57,9 @@ func_client: func.pb.o func.grpc.pb.o func_client.o
 warble_server: warble.pb.o warble.grpc.pb.o warble_server.o #helper.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
+database: database.o
+	$(CXX) $^ $(LDFLAGS) -o $@
+	
 %.grpc.pb.cc: %.proto
 	$(PROTOC) -I $(PROTOS_PATH) --grpc_out=. --plugin=protoc-gen-grpc=$(GRPC_CPP_PLUGIN_PATH) $<
 

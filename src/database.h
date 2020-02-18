@@ -5,7 +5,7 @@ class Database
 {
 public:
     void put(std::string key, std::string value);
-    std::string get(std::string key);
+    std::vector<std::string> get(std::string key);
     void remove(std::string key);
 
 private:

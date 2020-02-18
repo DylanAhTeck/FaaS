@@ -10,7 +10,7 @@
 #include "kvstore.grpc.pb.h"
 #include "kvstore_client.h"
 
-void KeyValueStoreClient::put(const std::string &key, const std::string &value)
+bool KeyValueStoreClient::put(const std::string &key, const std::string &value)
 {
     // Data we are sending to the server.
     PutRequest request;
@@ -29,10 +29,12 @@ void KeyValueStoreClient::put(const std::string &key, const std::string &value)
 
     // Act upon its status.
     if (status.ok())
-        std::cout << "PUT SUCCESFUL" << std::endl;
+        return true;
+
+    return false;
 }
 
-void KeyValueStoreClient::remove(const std::string &key)
+bool KeyValueStoreClient::remove(const std::string &key)
 {
     // Data we are sending to the server.
     RemoveRequest request;
@@ -50,10 +52,12 @@ void KeyValueStoreClient::remove(const std::string &key)
 
     // Act upon its status.
     if (status.ok())
-        std::cout << "REMOVE SUCCESFUL" << std::endl;
+        return true;
+
+    return false;
 }
 
-void KeyValueStoreClient::get(const std::string &key)
+std::string KeyValueStoreClient::get(const std::string &key)
 {
     // Context for the client. It could be used to convey extra information to
     // the server and/or tweak certain RPC behaviors.
@@ -67,12 +71,14 @@ void KeyValueStoreClient::get(const std::string &key)
     // Get the value for the sent key
     GetReply reply;
     stream->Read(&reply);
-    std::cout << key << " : " << reply.value() << "\n";
+    //std::cout << key << " : " << reply.value() << "\n";
 
     stream->WritesDone();
     Status status = stream->Finish();
     if (status.ok())
-        std::cout << "GET SUCCESFUL" << std::endl;
+        return reply.value();
+
+    return NULL;
 }
 
 int main(int argc, char **argv)

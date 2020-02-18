@@ -23,3 +23,8 @@ Status Warble::read(ServerContext *context, const ReadRequest *request, ReadRepl
 Status Warble::profile(ServerContext *context, const ProfileRequest *request, ProfileReply *reply)
 {
 }
+
+int main()
+{
+    return 1;
+}
