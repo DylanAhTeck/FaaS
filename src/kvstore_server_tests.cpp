@@ -74,28 +74,6 @@ public:
     KeyValueStoreClient *client_;
 };
 
-TEST_F(KvstoreServerTests, GetValues)
-{
-    EXPECT_EQ(client.get("One"), "1");
-    EXPECT_EQ(client.get("Two"), "2");
-    EXPECT_EQ(client.get("Three"), "3");
-}
-
-TEST_F(KvstoreServerTests, InsertNewValue)
-{
-    EXPECT_EQ(client.get("Four"), "NULL");
-    EXPECT_TRUE(client.put("Four", "4"));
-    EXPECT_EQ(client.get("Four"), "4");
-}
-
-TEST_F(KvstoreServerTests, RemoveValue)
-{
-
-    EXPECT_EQ(client_->get("One"), "1");
-    EXPECT_TRUE(client_->remove("One"));
-    EXPECT_EQ(client_->get("One"), NULL);
-}
-
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
