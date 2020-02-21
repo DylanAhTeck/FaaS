@@ -36,10 +36,10 @@ PROTOS_PATH = ../protos
 
 vpath %.proto $(PROTOS_PATH)
 
-all: system-check kvstore_server kvstore_client func_server func_client warble_server kvstore_server_tests database
+all: system-check kvstore_server kvstore_client func_server func_client warble_server database
 
 
-kvstore_server_tests: kvstore_server_tests.o 
+grpc_headers: kvstore.pb.o kvstore.grpc.pb.o func.pb.o func.grpc.pb.o warble.pb.o warble.grpc.pb.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 kvstore_server: kvstore.pb.o kvstore.grpc.pb.o kvstore_server.o #helper.o
@@ -51,7 +51,7 @@ kvstore_client: kvstore.pb.o kvstore.grpc.pb.o kvstore_client.o
 func_server: func.pb.o func.grpc.pb.o func_server.o #helper.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
-func_client: func.pb.o func.grpc.pb.o func_client.o 
+func_client: func.pb.o func.grpc.pb.o func_client.o warble.grpc.pb.o warble.pb.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 warble_server: warble.pb.o warble.grpc.pb.o warble_server.o #helper.o

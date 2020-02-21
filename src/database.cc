@@ -40,3 +40,8 @@ void Database::remove(std::string key)
     if (got != umap_.end())
         umap_.erase(got);
 }
+
+int main()
+{
+    return 1;
+}

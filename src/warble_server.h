@@ -1,10 +1,5 @@
 #include <grpcpp/grpcpp.h>
-
-// #ifdef BAZEL_BUILD
-// #include "examples/protos/keyvaluestore.grpc.pb.h"
-// #else
 #include "warble.grpc.pb.h"
-//#endif
 
 using grpc::Server;
 using grpc::ServerBuilder;
@@ -25,16 +20,18 @@ using warble::WarbleRequest;
 
 class Warble
 {
-    //registeruser(username)
-    //Registers the given non-blank username
-    Status registeruser(ServerContext *context, const RegisteruserRequest *request,
-                        RegisteruserReply *reply);
+    //Registers the given username
+    void registeruser(std::string username);
 
-    Status warble(ServerContext *context, const WarbleRequest *request, WarbleReply *reply);
+    //Posts a new warble by specific user and returns WarbleReply with id of new warble
+    WarbleReply *warble(std::string username, std::string text, int reply_to_warble_id);
 
-    Status follow(ServerContext *context, const FollowRequest *request, FollowReply *reply);
+    //Lets specified user follow another user
+    FollowReply *follow(std::string username, std::string user_to_follow);
 
-    Status read(ServerContext *context, const ReadRequest *request, ReadReply *reply);
+    //Reads a warble thread from the given id
+    ReadReply *read(int id);
 
-    Status profile(ServerContext *context, const ProfileRequest *request, ProfileReply *reply);
+    //Returns a warble profile
+    ProfileReply *profile(std::string username);
 };

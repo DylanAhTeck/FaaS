@@ -5,16 +5,8 @@
 
 #include <grpcpp/grpcpp.h>
 
-//#include "caching_interceptor.h"
-
-// #ifdef BAZEL_BUILD
-// #include "examples/protos/keyvaluestore.grpc.pb.h"
-// #else
-// #include "../kvstore/keyvaluestore.grpc.pb.h"
-// #endif
-
-//#include "../kvstore/kvstore.grpc.pb.h"
 #include "func.grpc.pb.h"
+#include "warble.grpc.pb.h"
 
 using grpc::Channel;
 using grpc::ClientContext;
@@ -28,31 +20,40 @@ using func::HookRequest;
 using func::UnhookReply;
 using func::UnhookRequest;
 
+using warble::FollowReply;
+using warble::FollowRequest;
+using warble::ProfileReply;
+using warble::ProfileRequest;
+using warble::ReadReply;
+using warble::ReadRequest;
+using warble::RegisteruserReply;
+using warble::RegisteruserRequest;
+using warble::Warble;
+using warble::WarbleReply;
+using warble::WarbleRequest;
+
 struct Payload : google::protobuf::Message
 {
+    int event_type;
+    std::string event_function;
+
     std::string username;
     std::string text;
-    int warbleid;
-    std::string usertofollow;
+    std::string parent_id;
+    std::string id;
+    std::string to_follow;
 };
 
 class FuncClient
 {
 public:
-    //Initializes client with function stubs
     FuncClient(std::shared_ptr<Channel> channel)
         : stub_(FuncService::NewStub(channel)) {}
 
-    //Sends PUT request with key,value variables to call kvstore_server API
-    //Receives Status::OK from return status if successful
     void hook(const int event_type, const std::string &event_function);
 
-    //Sends REMOVE request with key variable to call kvstore_server API
-    //Receives Status::OK from return status if successful
     void unhook(const int event_type);
 
-    //Sends REMOVE request with key variable to call kvstore_server API
-    //Receives value via status reply if get is succesful
     void event(const int event_type, const Payload &p);
 
 private:
