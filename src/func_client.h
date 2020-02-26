@@ -32,30 +32,32 @@ using warble::Warble;
 using warble::WarbleReply;
 using warble::WarbleRequest;
 
-struct Payload : google::protobuf::Message
-{
-    int event_type;
-    std::string event_function;
+namespace dylanwarble { 
 
-    std::string username;
-    std::string text;
-    std::string parent_id;
-    std::string id;
-    std::string to_follow;
+struct Payload : google::protobuf::Message {
+  int event_type;
+  std::string event_function;
+
+  std::string username;
+  std::string text;
+  std::string parent_id;
+  std::string id;
+  std::string to_follow;
 };
 
-class FuncClient
-{
-public:
-    FuncClient(std::shared_ptr<Channel> channel)
-        : stub_(FuncService::NewStub(channel)) {}
+class FuncClient {
+ public:
+  FuncClient(std::shared_ptr<Channel> channel)
+      : stub_(FuncService::NewStub(channel)) {}
 
-    void hook(const int event_type, const std::string &event_function);
+  void Hook(const int event_type, const std::string &event_function);
 
-    void unhook(const int event_type);
+  void Unhook(const int event_type);
 
-    void event(const int event_type, const Payload &p);
+  void Event(const int event_type, const Payload &p);
 
-private:
-    std::unique_ptr<FuncService::Stub> stub_;
+ private:
+  std::unique_ptr<FuncService::Stub> stub_;
 };
+
+}

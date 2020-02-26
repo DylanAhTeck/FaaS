@@ -36,7 +36,7 @@ PROTOS_PATH = ../protos
 
 vpath %.proto $(PROTOS_PATH)
 
-all: system-check kvstore_server kvstore_client func_server func_client warble_server database
+all: system-check kvstore_server kvstore_client func_server warble_server func_client database
 
 
 grpc_headers: kvstore.pb.o kvstore.grpc.pb.o func.pb.o func.grpc.pb.o warble.pb.o warble.grpc.pb.o
@@ -67,7 +67,7 @@ database: database.o
 	$(PROTOC) -I $(PROTOS_PATH) --cpp_out=. $<
 
 clean:
-	rm -f *.o *.pb.cc *.pb.h kvstore_server kvstore_client func_server func_client warble_server
+	rm -f *.o *.pb.cc *.pb.h kvstore_server kvstore_client func_server func_client warble_server database
 
 
 # The following is to test your system and ensure a smoother experience.

@@ -22,23 +22,23 @@ using kvstore::PutRequest;
 using kvstore::RemoveReply;
 using kvstore::RemoveRequest;
 
-class KeyValueStoreServiceImpl final : public KeyValueStore::Service
-{
-    //Puts a key,value pair in kvstore internal hashmap
-    //Returns Status::OK if succesfull Status::Cancelled if not
-    Status put(ServerContext *context, const PutRequest *putrequest,
-               PutReply *putreply) override;
+class KeyValueStoreServiceImpl final : public KeyValueStore::Service {
+  // Puts a key,value pair in kvstore internal hashmap
+  // Returns Status::OK if succesfull Status::Cancelled if not
+  Status put(ServerContext *context, const PutRequest *putrequest,
+             PutReply *putreply) override;
 
-    //Returns a previously store value from kvstore internal hashmap
-    //based on whether Request key; returns nothing if key is not present
+  // Returns a previously store value from kvstore internal hashmap
+  // based on whether Request key; returns nothing if key is not present
 
-    Status get(ServerContext *context, ServerReaderWriter<GetReply, GetRequest> *stream) override;
+  Status get(ServerContext *context,
+             ServerReaderWriter<GetReply, GetRequest> *stream) override;
 
-    //Removes a key,value pair based on Request key
-    //Returns Status::OK if succesfull Status::Cancelled if not
-    Status remove(ServerContext *context, const RemoveRequest *removerequest,
-                  RemoveReply *removereply) override;
+  // Removes a key,value pair based on Request key
+  // Returns Status::OK if succesfull Status::Cancelled if not
+  Status remove(ServerContext *context, const RemoveRequest *removerequest,
+                RemoveReply *removereply) override;
 
-private:
-    std::unordered_map<std::string, std::string> umap_;
+ private:
+  std::unordered_map<std::string, std::string> umap_;
 };

@@ -18,20 +18,21 @@ using warble::RegisteruserRequest;
 using warble::WarbleReply;
 using warble::WarbleRequest;
 
-class Warble
-{
-    //Registers the given username
-    void registeruser(std::string username);
+class Warble {
+  // Registers the given username
+  void registeruser(std::string username);
 
-    //Posts a new warble by specific user and returns WarbleReply with id of new warble
-    WarbleReply *warble(std::string username, std::string text, int reply_to_warble_id);
+  // Posts a new warble by specific user and returns WarbleReply with id of new
+  // warble
+  WarbleReply *warble(std::string username, std::string text,
+                      int reply_to_warble_id);
 
-    //Lets specified user follow another user
-    FollowReply *follow(std::string username, std::string user_to_follow);
+  // Lets specified user follow another user
+  FollowReply *follow(std::string username, std::string user_to_follow);
 
-    //Reads a warble thread from the given id
-    ReadReply *read(int id);
+  // Reads a warble thread from the given id
+  ReadReply *read(int id);
 
-    //Returns a warble profile
-    ProfileReply *profile(std::string username);
+  // Returns a warble profile
+  ProfileReply *profile(std::string username);
 };
