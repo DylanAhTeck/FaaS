@@ -1,5 +1,5 @@
 #include <unordered_map>
-
+#include "warble.grpc.pb.h"
 #include <grpcpp/grpcpp.h>
 
 // #ifdef BAZEL_BUILD
@@ -22,8 +22,22 @@ using func::HookRequest;
 using func::UnhookReply;
 using func::UnhookRequest;
 
-namespace dylanwarble {
-class FuncServiceImpl final : public FuncService::Service {
+using warble::FollowReply;
+using warble::FollowRequest;
+using warble::ProfileReply;
+using warble::ProfileRequest;
+using warble::ReadReply;
+using warble::ReadRequest;
+using warble::RegisteruserReply;
+using warble::RegisteruserRequest;
+using warble::Warble;
+using warble::WarbleReply;
+using warble::WarbleRequest;
+
+namespace dylanwarble
+{
+class FuncServiceImpl final : public FuncService::Service
+{
   // Allows a service to specify a function
   // for processing of certain message types
   Status hook(ServerContext *context, const HookRequest *hookrequest,
@@ -37,4 +51,4 @@ class FuncServiceImpl final : public FuncService::Service {
   Status event(ServerContext *context, const EventRequest *eventrequest,
                EventReply *eventreply) override;
 };
-}
+} // namespace dylanwarble

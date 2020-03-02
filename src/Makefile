@@ -36,8 +36,7 @@ PROTOS_PATH = ../protos
 
 vpath %.proto $(PROTOS_PATH)
 
-all: system-check kvstore_server kvstore_client warble_server func_server func_client  database
-
+all: system-check kvstore_server kvstore_client warble_server func_server  database #func_client
 
 clclient: func.pb.o func.grpc.pb.o func_client.o warble.grpc.pb.o warble.pb.o clclient.o -lboost_program_options
 	$(CXX) $^ $(LDFLAGS) -o $@
@@ -51,7 +50,7 @@ kvstore_server: kvstore.pb.o kvstore.grpc.pb.o kvstore_server.o #helper.o
 kvstore_client: kvstore.pb.o kvstore.grpc.pb.o kvstore_client.o 
 	$(CXX) $^ $(LDFLAGS) -o $@
 
-func_server: func.pb.o func.grpc.pb.o func_server.o #helper.o
+func_server: func.pb.o func.grpc.pb.o func_server.o warble.grpc.pb.o warble.pb.o #helper.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 func_client: func.pb.o func.grpc.pb.o func_client.o warble.grpc.pb.o warble.pb.o
@@ -70,7 +69,7 @@ database: database.o
 	$(PROTOC) -I $(PROTOS_PATH) --cpp_out=. $<
 
 clean:
-	rm -f *.o *.pb.cc *.pb.h kvstore_server kvstore_client func_server func_client warble_server database
+	rm -f *.o *.pb.cc *.pb.h kvstore_server kvstore_client func_server func_client warble_server database clclient
 
 
 # The following is to test your system and ensure a smoother experience.

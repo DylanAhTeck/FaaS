@@ -3,27 +3,38 @@
 
 #include "func.grpc.pb.h"
 
-namespace dylanwarble {
+namespace dylanwarble
+{
 Status FuncServiceImpl::hook(ServerContext *context,
                              const HookRequest *hookrequest,
-                             HookReply *hookreply) {
+                             HookReply *hookreply)
+{
   return Status::OK;
 }
 
 Status FuncServiceImpl::unhook(ServerContext *context,
                                const UnhookRequest *unhookrequest,
-                               UnhookReply *unhookreply) {
+                               UnhookReply *unhookreply)
+{
   return Status::OK;
 }
 
 Status FuncServiceImpl::event(ServerContext *context,
-                              const EventRequest *eventequest,
-                              EventReply *eventreply) {
+                              const EventRequest *eventrequest,
+                              EventReply *eventreply)
+{
+  const google::protobuf::Any payload = eventrequest->payload();
+
+  RegisteruserRequest request;
+  payload.UnpackTo(&request);
+  std::string s = request.username();
+  std::cerr << s << std::endl;
+
   return Status::OK;
 }
 
-
-void RunServer() {
+void RunServer()
+{
   std::string server_address("0.0.0.0:50000");
   FuncServiceImpl service;
 
@@ -42,9 +53,10 @@ void RunServer() {
   server->Wait();
 }
 
-}
+} // namespace dylanwarble
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   dylanwarble::RunServer();
   return 0;
 }

@@ -4,7 +4,6 @@
 #include <boost/program_options.hpp>
 #include <grpcpp/grpcpp.h>
 #include "func_client.h"
-
 /*
 Event type
 0                --registeruser <username>	Registers the given username
@@ -39,7 +38,6 @@ struct Payload : google::protobuf::Message
 {
     int event_type;
     std::string event_function;
->>>>>>> Stashed changes
 
     std::string username;
     std::string text;
@@ -49,12 +47,11 @@ struct Payload : google::protobuf::Message
 };
 */
 
-namespace
+namespace dylanwarble
 {
 const size_t ERROR_IN_COMMAND_LINE = 1;
 const size_t SUCCESS = 0;
 const size_t ERROR_UNHANDLED_EXCEPTION = 2;
-} // namespace
 
 void SetPayload(struct Payload &p, int event_type, const boost::program_options::variables_map &vm)
 {
@@ -62,16 +59,16 @@ void SetPayload(struct Payload &p, int event_type, const boost::program_options:
   switch (event_type)
   {
   //Register user
-  case 0:
-    p.event_type = 0;
-    p.event_function = "registeruser";
+  case kRegisterUserID:
+    p.event_type = kRegisterUserID;
+    p.event_function = kRegisterUser;
     p.username = vm["registeruser"].as<std::string>();
     break;
 
   //Warble (optional reply)
-  case 1:
-    p.event_type = 1;
-    p.event_function = "warble";
+  case kWarbleID:
+    p.event_type = kWarbleID;
+    p.event_function = kWarble;
     p.username = vm["user"].as<std::string>();
     p.text = vm["warble"].as<std::string>();
     if (vm.count("reply"))
@@ -79,25 +76,25 @@ void SetPayload(struct Payload &p, int event_type, const boost::program_options:
     break;
 
   //Follow user
-  case 2:
-    p.event_type = 2;
-    p.event_function = "follow";
+  case kFollowUserID:
+    p.event_type = kFollowUserID;
+    p.event_function = kFollowUser;
     p.username = vm["username"].as<std::string>();
     p.to_follow = vm["follow"].as<std::string>();
     break;
 
   //Read warble ID
-  case 3:
-    p.event_type = 3;
-    p.event_function = "read";
+  case kReadID:
+    p.event_type = kReadID;
+    p.event_function = kRead;
     p.username = vm["user"].as<std::string>();
     p.id = vm["read"].as<std::string>();
     break;
 
   //Get followers and following
-  case 4:
-    p.event_type = 4;
-    p.event_function = "profile";
+  case kProfileID:
+    p.event_type = kProfileID;
+    p.event_function = kProfile;
     p.username = vm["user"].as<std::string>();
     break;
 
@@ -108,17 +105,18 @@ void SetPayload(struct Payload &p, int event_type, const boost::program_options:
   FuncClient funcclient(grpc::CreateChannel(
       "localhost:50000", grpc::InsecureChannelCredentials()));
 
-  funcclient.event(event_type, p);
+  funcclient.Event(event_type, p);
 }
+
+} // namespace dylanwarble
 
 int main(int argc, char *argv[])
 {
-  Payload command;
+  dylanwarble::Payload command;
   bool too_many_commands = false;
   namespace po = boost::program_options;
   try
   {
-
     po::options_description desc{"Options"};
     desc.add_options()("registeruser", po::value<std::string>(), "Register User")("user", po::value<std::string>(), "User")("warble", po::value<std::string>(), "Warble")("reply", po::value<std::string>(), "Reply Warble ID")("follow", po::value<std::string>(), "Username")("read", po::value<std::string>(), "Read")("profile", "Profile");
 
@@ -135,13 +133,13 @@ int main(int argc, char *argv[])
         vm.count("follow") && vm.size() > 2)
     {
       std::cerr << "Error: too many commands" << std::endl;
-      return ERROR_IN_COMMAND_LINE;
+      return dylanwarble::ERROR_IN_COMMAND_LINE;
     }
 
     if (!vm.count("user") && !vm.count("registeruser"))
     {
       std::cerr << "Error: command requires a specified user" << std::endl;
-      return ERROR_IN_COMMAND_LINE;
+      return dylanwarble::ERROR_IN_COMMAND_LINE;
     }
 
     //Valid command as from here
@@ -159,8 +157,8 @@ int main(int argc, char *argv[])
   catch (po::error &ex)
   {
     std::cerr << ex.what() << '\n';
-    return ERROR_UNHANDLED_EXCEPTION;
+    return dylanwarble::ERROR_UNHANDLED_EXCEPTION;
   }
 
-  return SUCCESS;
+  return dylanwarble::SUCCESS;
 }

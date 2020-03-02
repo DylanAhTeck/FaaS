@@ -35,6 +35,24 @@ using warble::WarbleRequest;
 namespace dylanwarble
 {
 
+enum FunctionID
+{
+  kRegisterUserID = 0,
+  kWarbleID = 1,
+  kFollowUserID = 2,
+  kReadID = 3,
+  kProfileID = 4,
+};
+
+enum FunctionName
+{
+  kRegisterUser,
+  kWarble,
+  kFollowUser,
+  kRead,
+  kProfile,
+};
+
 struct Payload
 {
   int event_type;
