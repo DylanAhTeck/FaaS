@@ -8,11 +8,11 @@ namespace dylanwarble {
 class Database {
  public:
   // Stores key-value pair
-  void Put(std::string key, std::string value);
+  bool Put(std::string key, std::string value);
   // Retrieves value(s) of key
   std::vector<std::string> Get(std::string key);
   // Removes all values of key
-  void Remove(std::string key);
+  bool Remove(std::string key);
 
  private:
   // Internal hash_map used for now

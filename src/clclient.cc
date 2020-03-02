@@ -55,6 +55,16 @@ const size_t ERROR_IN_COMMAND_LINE = 1;
 const size_t SUCCESS = 0;
 const size_t ERROR_UNHANDLED_EXCEPTION = 2;
 
+//Function to send payload to func_client
+void SendPayload(int event_type, struct Payload &p)
+{
+  // Create a channel with PORT 50000 and send event request
+  FuncClient funcclient(grpc::CreateChannel(
+      "localhost:50000", grpc::InsecureChannelCredentials()));
+
+  funcclient.Event(event_type, p);
+}
+
 // Function to set payload and send to func_client
 void SetPayload(struct Payload &p, int event_type,
                 const boost::program_options::variables_map &vm)
@@ -105,11 +115,7 @@ void SetPayload(struct Payload &p, int event_type,
     std::cerr << "Invalid event type" << std::endl;
   }
 
-  // Create a channel with PORT 50000 and send event request
-  FuncClient funcclient(grpc::CreateChannel(
-      "localhost:50000", grpc::InsecureChannelCredentials()));
-
-  funcclient.Event(event_type, p);
+  SendPayload(event_type, p);
 }
 
 } // namespace dylanwarble
@@ -159,15 +165,15 @@ int main(int argc, char *argv[])
 
     // Valid command as from here
     if (vm.count("registeruser"))
-      SetPayload(command, 0, vm);
+      SetPayload(command, dylanwarble::kRegisterUserID, vm);
     else if (vm.count("warble"))
-      SetPayload(command, 1, vm);
+      SetPayload(command, dylanwarble::kWarbleID, vm);
     else if (vm.count("follow"))
-      SetPayload(command, 2, vm);
+      SetPayload(command, dylanwarble::kFollowUserID, vm);
     else if (vm.count("read"))
-      SetPayload(command, 3, vm);
+      SetPayload(command, dylanwarble::kReadID, vm);
     else if (vm.count("profile"))
-      SetPayload(command, 4, vm);
+      SetPayload(command, dylanwarble::kProfileID, vm);
   }
   catch (po::error &ex)
   {
