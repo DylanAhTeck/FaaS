@@ -16,7 +16,6 @@
 //#include "../kvstore/kvstore.grpc.pb.h"
 #include "kvstore.grpc.pb.h"
 
-
 namespace dylanwarble {
 
 using grpc::Channel;
@@ -52,4 +51,4 @@ class KeyValueStoreClient {
   std::unique_ptr<KeyValueStore::Stub> stub_;
 };
 
-}
+}  // namespace dylanwarble

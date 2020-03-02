@@ -24,7 +24,8 @@ std::vector<std::string> Database::Get(std::string key) {
   if (got == umap_.end()) return std::vector<std::string>();
 
   // Key found, return second element
-  else return got->second;
+  else
+    return got->second;
 }
 void Database::Remove(std::string key) {
   // Iterator pointing to key-value pair
@@ -35,6 +36,6 @@ void Database::Remove(std::string key) {
   if (got != umap_.end()) umap_.erase(got);
 }
 
-}  // namespace database
+}  // namespace dylanwarble
 
 int main() { return 1; }
