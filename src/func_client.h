@@ -32,9 +32,11 @@ using warble::Warble;
 using warble::WarbleReply;
 using warble::WarbleRequest;
 
-namespace dylanwarble { 
+namespace dylanwarble
+{
 
-struct Payload : google::protobuf::Message {
+struct Payload
+{
   int event_type;
   std::string event_function;
 
@@ -45,8 +47,9 @@ struct Payload : google::protobuf::Message {
   std::string to_follow;
 };
 
-class FuncClient {
- public:
+class FuncClient
+{
+public:
   FuncClient(std::shared_ptr<Channel> channel)
       : stub_(FuncService::NewStub(channel)) {}
 
@@ -56,8 +59,8 @@ class FuncClient {
 
   void Event(const int event_type, const Payload &p);
 
- private:
+private:
   std::unique_ptr<FuncService::Stub> stub_;
 };
 
-}
+} // namespace dylanwarble

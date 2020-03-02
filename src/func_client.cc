@@ -2,9 +2,11 @@
 #include "func_client.h"
 #include <iostream>
 
-namespace dylanwarble {
+namespace dylanwarble
+{
 // Allows service to specify that a function is valid
-void FuncClient::Hook(const int event_type, const std::string &event_function) {
+void FuncClient::Hook(const int event_type, const std::string &event_function)
+{
   // Data we are sending to the server.
   HookRequest request;
   request.set_event_type(event_type);
@@ -22,11 +24,13 @@ void FuncClient::Hook(const int event_type, const std::string &event_function) {
 
   // Act upon its status.
   //TO-DO - Replace with glog
-  if (status.ok()) std::cout << "Hook SUCCESFUL" << std::endl;
+  if (status.ok())
+    std::cout << "Hook SUCCESFUL" << std::endl;
 }
 
 // Service specifies that the function is invalid
-void FuncClient::Unhook(const int event_type) {
+void FuncClient::Unhook(const int event_type)
+{
   // Data we are sending to the server.
   UnhookRequest request;
   request.set_event_type(event_type);
@@ -42,20 +46,27 @@ void FuncClient::Unhook(const int event_type) {
   Status status = stub_->unhook(&context, request, &reply);
 
   // Act upon its status.
-  if (status.ok()) std::cout << "Unhook SUCCESFUL" << std::endl;
+  if (status.ok())
+    std::cout << "Unhook SUCCESFUL" << std::endl;
 }
 
-// This takes in the struct payload and sets the requests
-void FuncClient::Event(const int event_type, const Payload &p) {
-  google::protobuf::Any payload;
-  // payload.PackFrom(p);
+//This takes in the struct payload and sets the requests
+void FuncClient::Event(const int event_type, const Payload &p)
+{
 
-  switch (event_type) {
-    case 0: {
-      RegisteruserRequest request;
-      request.set_username(p.username);
-      payload.PackFrom(request);
-      break;
+  std::cout << p.event_type << p.event_function << p.username << std::endl;
+  /*
+    google::protobuf::Any payload;
+    //payload.PackFrom(p);
+
+    switch (event_type)
+    {
+    case 0:
+    {
+        RegisteruserRequest request;
+        request.set_username(p.username);
+        payload.PackFrom(request);
+        break;
     }
     case 1: {
       WarbleRequest request;
@@ -122,19 +133,13 @@ void FuncClient::Event(const int event_type, const Payload &p) {
   // If read, return warble thread
   // If profile, return followers and following
 
-  // E.g for Warble
-  if (event_type == 1) {
-    WarbleReply *warble_reply;
-    return_payload.UnpackTo(warble_reply);
-    // Warble warble = warble_reply->warble();
-    // std::cout << "Warble ID: " << warble.id << std::endl;
-  }
-
-  // Etc
+    */
+  //Etc
 }
+} // namespace dylanwarble
 
-}
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   dylanwarble::FuncClient funcclient(grpc::CreateChannel(
       "localhost:50000", grpc::InsecureChannelCredentials()));
 

@@ -36,8 +36,11 @@ PROTOS_PATH = ../protos
 
 vpath %.proto $(PROTOS_PATH)
 
-all: system-check kvstore_server kvstore_client func_server warble_server func_client database
+all: system-check kvstore_server kvstore_client warble_server func_server func_client  database
 
+
+clclient: func.pb.o func.grpc.pb.o func_client.o warble.grpc.pb.o warble.pb.o clclient.o -lboost_program_options
+	$(CXX) $^ $(LDFLAGS) -o $@
 
 grpc_headers: kvstore.pb.o kvstore.grpc.pb.o func.pb.o func.grpc.pb.o warble.pb.o warble.grpc.pb.o
 	$(CXX) $^ $(LDFLAGS) -o $@
