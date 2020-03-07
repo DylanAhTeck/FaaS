@@ -11,7 +11,6 @@
 #include "kvstore.grpc.pb.h"
 namespace dylanwarble {
 
-
 bool KeyValueStoreClient::Put(const std::string &key,
                               const std::string &value) {
   // Data we are sending to the server.
@@ -78,7 +77,7 @@ std::string KeyValueStoreClient::Get(const std::string &key) {
   return NULL;
 }
 
-}
+}  // namespace dylanwarble
 int main(int argc, char **argv) {
   dylanwarble::KeyValueStoreClient kvclient(grpc::CreateChannel(
       "localhost:50001", grpc::InsecureChannelCredentials()));

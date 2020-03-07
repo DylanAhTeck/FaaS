@@ -1,9 +1,9 @@
 
+#include <grpcpp/grpcpp.h>
+#include <boost/program_options.hpp>
 #include <fstream>
 #include <iostream>
-
 #include "func_client.h"
-
 /*
 Event type
 0                --registeruser <username>	Registers the given username
@@ -29,15 +29,157 @@ and calls the appropriate warble function
 5) The warble function does the logic and stores/updates data
 on kv_store (an instance of which lives in func instance)
 6) The func_server returns to func_client. Func_client
-unpacks the reply and displays it on terminal
 
+unpacks the reply and displays it on terminal
 */
-int main(int argc, char *argv[]) {
-  // Breaks down the arguments, stores in a struct, and does
-  // error checking
-  for (int i = 0; i < argc; ++i) {
+
+/* Defined in func_client.h
+struct Payload : google::protobuf::Message
+{
+    int event_type;
+    std::string event_function;
+
+    std::string username;
+    std::string text;
+    std::string parent_id;
+    std::string id;
+    std::string to_follow;
+};
+*/
+
+namespace dylanwarble
+{
+
+// Constants for Errors in command-line argument parsing
+const size_t ERROR_IN_COMMAND_LINE = 1;
+const size_t SUCCESS = 0;
+const size_t ERROR_UNHANDLED_EXCEPTION = 2;
+
+//Function to send payload to func_client
+void SendPayload(int event_type, struct Payload &p)
+{
+  // Create a channel with PORT 50000 and send event request
+  FuncClient funcclient(grpc::CreateChannel(
+      "localhost:50000", grpc::InsecureChannelCredentials()));
+
+  funcclient.Event(event_type, p);
+}
+
+// Function to set payload and send to func_client
+void SetPayload(struct Payload &p, int event_type,
+                const boost::program_options::variables_map &vm)
+{
+  switch (event_type)
+  {
+  // Register user
+  case kRegisterUserID:
+    p.event_type = kRegisterUserID;
+    p.event_function = kRegisterUser;
+    p.username = vm["registeruser"].as<std::string>();
+    break;
+
+  // Warble (optional reply)
+  case kWarbleID:
+    p.event_type = kWarbleID;
+    p.event_function = kWarble;
+    p.username = vm["user"].as<std::string>();
+    p.text = vm["warble"].as<std::string>();
+    if (vm.count("reply"))
+      p.parent_id = vm["reply"].as<std::string>();
+    break;
+
+  // Follow user
+  case kFollowUserID:
+    p.event_type = kFollowUserID;
+    p.event_function = kFollowUser;
+    p.username = vm["username"].as<std::string>();
+    p.to_follow = vm["follow"].as<std::string>();
+    break;
+
+  // Read warble ID
+  case kReadID:
+    p.event_type = kReadID;
+    p.event_function = kRead;
+    p.username = vm["user"].as<std::string>();
+    p.id = vm["read"].as<std::string>();
+    break;
+
+  // Get followers and following
+  case kProfileID:
+    p.event_type = kProfileID;
+    p.event_function = kProfile;
+    p.username = vm["user"].as<std::string>();
+    break;
+
+  default:
+    std::cerr << "Invalid event type" << std::endl;
   }
 
-  // Calls func_client event function
-  return 1;
+  SendPayload(event_type, p);
+}
+
+} // namespace dylanwarble
+
+int main(int argc, char *argv[])
+{
+  dylanwarble::Payload command;
+  bool too_many_commands = false;
+  namespace po = boost::program_options;
+
+  try
+  {
+    // Use boost library to parse command-line
+    po::options_description desc{"Options"};
+
+    // Add possible flags
+    desc.add_options()("registeruser", po::value<std::string>(),
+                       "Register User")("user", po::value<std::string>(),
+                                        "User")(
+        "warble", po::value<std::string>(), "Warble")(
+        "reply", po::value<std::string>(), "Reply Warble ID")(
+        "follow", po::value<std::string>(), "Username")(
+        "read", po::value<std::string>(), "Read")("profile", "Profile");
+
+    // Stores flag arguments in a map
+    po::variables_map vm;
+    po::store(parse_command_line(argc, argv, desc), vm);
+    po::notify(vm);
+
+    // Basic error checking
+    if (vm.count("registeruser") && vm.size() > 1 ||
+        vm.count("warble") && !vm.count("reply") && vm.size() > 2 ||
+        vm.count("warble") && vm.count("reply") && vm.size() > 3 ||
+        vm.count("read") && vm.size() > 2 ||
+        vm.count("profile") && vm.size() > 2 ||
+        vm.count("follow") && vm.size() > 2)
+    {
+      std::cerr << "Error: too many commands" << std::endl;
+      return dylanwarble::ERROR_IN_COMMAND_LINE;
+    }
+
+    if (!vm.count("user") && !vm.count("registeruser"))
+    {
+      std::cerr << "Error: command requires a specified user" << std::endl;
+      return dylanwarble::ERROR_IN_COMMAND_LINE;
+    }
+
+    // Valid command as from here
+    if (vm.count("registeruser"))
+      SetPayload(command, dylanwarble::kRegisterUserID, vm);
+    else if (vm.count("warble"))
+      SetPayload(command, dylanwarble::kWarbleID, vm);
+    else if (vm.count("follow"))
+      SetPayload(command, dylanwarble::kFollowUserID, vm);
+    else if (vm.count("read"))
+      SetPayload(command, dylanwarble::kReadID, vm);
+    else if (vm.count("profile"))
+      SetPayload(command, dylanwarble::kProfileID, vm);
+  }
+  catch (po::error &ex)
+  {
+    std::cerr << ex.what() << '\n';
+    return dylanwarble::ERROR_UNHANDLED_EXCEPTION;
+  }
+
+  return dylanwarble::SUCCESS;
 }

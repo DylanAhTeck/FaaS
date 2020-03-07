@@ -32,9 +32,27 @@ using warble::Warble;
 using warble::WarbleReply;
 using warble::WarbleRequest;
 
-namespace dylanwarble { 
+namespace dylanwarble {
 
-struct Payload : google::protobuf::Message {
+// enum for event_id
+enum FunctionID {
+  kRegisterUserID = 0,
+  kWarbleID = 1,
+  kFollowUserID = 2,
+  kReadID = 3,
+  kProfileID = 4,
+};
+
+// enum for event
+enum FunctionName {
+  kRegisterUser,
+  kWarble,
+  kFollowUser,
+  kRead,
+  kProfile,
+};
+// Internal datastructure to package data from clclient to func_client
+struct Payload {
   int event_type;
   std::string event_function;
 
@@ -47,17 +65,21 @@ struct Payload : google::protobuf::Message {
 
 class FuncClient {
  public:
+  // Creates a new client
   FuncClient(std::shared_ptr<Channel> channel)
       : stub_(FuncService::NewStub(channel)) {}
 
+  // Hooks an event with int event_type
   void Hook(const int event_type, const std::string &event_function);
 
+  // Unooks an event with int event_type
   void Unhook(const int event_type);
 
+  // Requests an event with parameters stored in Payload by clclient
   void Event(const int event_type, const Payload &p);
 
  private:
   std::unique_ptr<FuncService::Stub> stub_;
 };
 
-}
+}  // namespace dylanwarble

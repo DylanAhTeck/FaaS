@@ -1,6 +1,6 @@
-#include <unordered_map>
-
 #include <grpcpp/grpcpp.h>
+#include <unordered_map>
+#include "warble.grpc.pb.h"
 
 // #ifdef BAZEL_BUILD
 // #include "examples/protos/keyvaluestore.grpc.pb.h"
@@ -22,6 +22,18 @@ using func::HookRequest;
 using func::UnhookReply;
 using func::UnhookRequest;
 
+using warble::FollowReply;
+using warble::FollowRequest;
+using warble::ProfileReply;
+using warble::ProfileRequest;
+using warble::ReadReply;
+using warble::ReadRequest;
+using warble::RegisteruserReply;
+using warble::RegisteruserRequest;
+using warble::Warble;
+using warble::WarbleReply;
+using warble::WarbleRequest;
+
 namespace dylanwarble {
 class FuncServiceImpl final : public FuncService::Service {
   // Allows a service to specify a function
@@ -37,4 +49,4 @@ class FuncServiceImpl final : public FuncService::Service {
   Status event(ServerContext *context, const EventRequest *eventrequest,
                EventReply *eventreply) override;
 };
-}
+}  // namespace dylanwarble

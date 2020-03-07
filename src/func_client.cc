@@ -2,9 +2,11 @@
 #include "func_client.h"
 #include <iostream>
 
-namespace dylanwarble {
+namespace dylanwarble
+{
 // Allows service to specify that a function is valid
-void FuncClient::Hook(const int event_type, const std::string &event_function) {
+void FuncClient::Hook(const int event_type, const std::string &event_function)
+{
   // Data we are sending to the server.
   HookRequest request;
   request.set_event_type(event_type);
@@ -21,12 +23,14 @@ void FuncClient::Hook(const int event_type, const std::string &event_function) {
   Status status = stub_->hook(&context, request, &reply);
 
   // Act upon its status.
-  //TO-DO - Replace with glog
-  if (status.ok()) std::cout << "Hook SUCCESFUL" << std::endl;
+  // TO-DO - Replace with glog
+  if (status.ok())
+    std::cout << "Hook SUCCESSFUL" << std::endl;
 }
 
 // Service specifies that the function is invalid
-void FuncClient::Unhook(const int event_type) {
+void FuncClient::Unhook(const int event_type)
+{
   // Data we are sending to the server.
   UnhookRequest request;
   request.set_event_type(event_type);
@@ -42,60 +46,84 @@ void FuncClient::Unhook(const int event_type) {
   Status status = stub_->unhook(&context, request, &reply);
 
   // Act upon its status.
-  if (status.ok()) std::cout << "Unhook SUCCESFUL" << std::endl;
+  if (status.ok())
+    std::cout << "Unhook SUCCESSFUL" << std::endl;
+}
+
+void SetRegisterUserRequest(const Payload &p, google::protobuf::Any *payload)
+{
+  RegisteruserRequest request;
+  request.set_username(p.username);
+  payload->PackFrom(request);
+}
+
+void SetWarbleRequest(const Payload &p, google::protobuf::Any *payload)
+{
+  WarbleRequest request;
+  request.set_username(p.username);
+  request.set_text(p.text);
+  request.set_parent_id(p.parent_id);
+  payload->PackFrom(request);
+}
+
+void SetFollowRequest(const Payload &p, google::protobuf::Any *payload)
+{
+  FollowRequest request;
+  request.set_username(p.username);
+  request.set_to_follow(p.to_follow);
+  payload->PackFrom(request);
+}
+void SetReadRequest(const Payload &p, google::protobuf::Any *payload)
+{
+  ReadRequest request;
+  request.set_warble_id(p.id);
+  payload->PackFrom(request);
+}
+void SetProfileRequest(const Payload &p, google::protobuf::Any *payload)
+{
+  ProfileRequest request;
+  request.set_username(p.username);
+  payload->PackFrom(request);
 }
 
 // This takes in the struct payload and sets the requests
-void FuncClient::Event(const int event_type, const Payload &p) {
-  google::protobuf::Any payload;
-  // payload.PackFrom(p);
+void FuncClient::Event(const int event_type, const Payload &p)
+{
+  std::cout << p.event_type << p.event_function << p.username << std::endl;
 
-  switch (event_type) {
-    case 0: {
-      RegisteruserRequest request;
-      request.set_username(p.username);
-      payload.PackFrom(request);
-      break;
-    }
-    case 1: {
-      WarbleRequest request;
-      request.set_username(p.username);
-      request.set_text(p.text);
-      request.set_parent_id(p.parent_id);
-      payload.PackFrom(request);
-      break;
-    }
+  google::protobuf::Any *payload = new google::protobuf::Any;
 
-    case 2: {
-      FollowRequest request;
-      request.set_username(p.username);
-      request.set_to_follow(p.to_follow);
-      payload.PackFrom(request);
-      break;
-    }
+  switch (event_type)
+  {
+  case kRegisterUserID:
+    SetRegisterUserRequest(p, payload);
+    break;
 
-    case 3: {
-      ReadRequest request;
-      request.set_warble_id(p.id);
-      payload.PackFrom(request);
-      break;
-    }
+  case kWarbleID:
+    SetWarbleRequest(p, payload);
+    break;
 
-    case 4: {
-      ProfileRequest request;
-      request.set_username(p.username);
-      payload.PackFrom(request);
-      break;
-    }
+  case kFollowUserID:
+    SetFollowRequest(p, payload);
+    break;
 
-    default:
-      break;
+  case kReadID:
+    SetReadRequest(p, payload);
+    break;
+
+  case kProfileID:
+    SetProfileRequest(p, payload);
+    break;
+
+  default:
+    std::cerr << "Invalid event_type used in Event function" << std::endl;
+    return;
   }
 
   // EventRequest.payload in this case would be one type of Warble request
-  EventRequest request;
-  request.set_event_type(event_type);
-  request.set_allocated_payload(&payload);
+  EventRequest event_request;
+  event_request.set_event_type(event_type);
+  event_request.set_allocated_payload(payload);
 
   // Container for the data we expect from the server.
   EventReply reply;
@@ -107,13 +135,14 @@ void FuncClient::Event(const int event_type, const Payload &p) {
   // EventReply.payload in this case would be a Warble Reply
 
   // The actual RPC.
-  Status status = stub_->event(&context, request, &reply);
+  Status status = stub_->event(&context, event_request, &reply);
 
   // Reply will now have payload if request was succesful
+  google::protobuf::Any return_payload = reply.payload();
 
-  google::protobuf::Any return_payload = request.payload();
-
-  if (!status.ok()) {
+  // To-do - change this to glog
+  if (!status.ok())
+  {
     std::cout << "Error" << std::endl;
     return;
   }
@@ -122,21 +151,6 @@ void FuncClient::Event(const int event_type, const Payload &p) {
   // If read, return warble thread
   // If profile, return followers and following
 
-  // E.g for Warble
-  if (event_type == 1) {
-    WarbleReply *warble_reply;
-    return_payload.UnpackTo(warble_reply);
-    // Warble warble = warble_reply->warble();
-    // std::cout << "Warble ID: " << warble.id << std::endl;
-  }
-
-  // Etc
+  // To-do: process and return reply message
 }
-
-}
-int main(int argc, char **argv) {
-  dylanwarble::FuncClient funcclient(grpc::CreateChannel(
-      "localhost:50000", grpc::InsecureChannelCredentials()));
-
-  return 0;
-}
+} // namespace dylanwarble

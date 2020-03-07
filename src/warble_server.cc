@@ -20,7 +20,4 @@ ProfileReply *Warble::profile(std::string username) {}
 
 // How do I compile and link warble_server and warble.grpc.pb.h
 // without a main function?
-int main()
-{
-    return 1;
-}
+int main() { return 1; }

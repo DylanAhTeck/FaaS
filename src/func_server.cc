@@ -17,11 +17,17 @@ Status FuncServiceImpl::unhook(ServerContext *context,
 }
 
 Status FuncServiceImpl::event(ServerContext *context,
-                              const EventRequest *eventequest,
+                              const EventRequest *eventrequest,
                               EventReply *eventreply) {
+  const google::protobuf::Any payload = eventrequest->payload();
+
+  RegisteruserRequest request;
+  payload.UnpackTo(&request);
+  std::string s = request.username();
+  std::cerr << s << std::endl;
+
   return Status::OK;
 }
-
 
 void RunServer() {
   std::string server_address("0.0.0.0:50000");
@@ -42,7 +48,7 @@ void RunServer() {
   server->Wait();
 }
 
-}
+}  // namespace dylanwarble
 
 int main(int argc, char **argv) {
   dylanwarble::RunServer();
