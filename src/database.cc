@@ -5,6 +5,10 @@ namespace dylanwarble
 
 bool Database::Put(std::string key, std::string value)
 {
+
+  //Locks mutex - only current thread can access map
+  mut.lock();
+
   // Iterator pointing to key-value pair
   auto it = umap_.find(key);
 
@@ -18,14 +22,23 @@ bool Database::Put(std::string key, std::string value)
     umap_.insert(std::make_pair(key, std::vector<std::string>(1, value)));
   }
 
+  //Release mutex
+  mut.unlock();
+
   return true;
 }
 
 std::vector<std::string> Database::Get(std::string key)
 {
+
+  //Lock mutex
+  mut.lock();
   // Iterator pointing to key-value pair
   std::unordered_map<std::string, std::vector<std::string>>::const_iterator
       got = umap_.find(key);
+
+  //Release mutex
+  mut.unlock();
 
   // Key not found, return empty vector
   if (got == umap_.end())
@@ -37,6 +50,8 @@ std::vector<std::string> Database::Get(std::string key)
 }
 bool Database::Remove(std::string key)
 {
+  //Gain sole access to map
+  mut.lock();
   // Iterator pointing to key-value pair
   std::unordered_map<std::string, std::vector<std::string>>::const_iterator
       got = umap_.find(key);
@@ -44,6 +59,9 @@ bool Database::Remove(std::string key)
   // Erase the element pointed by iterator
   if (got != umap_.end())
     umap_.erase(got);
+
+  //Release access to map
+  mut.unlock();
 
   return true;
 }
