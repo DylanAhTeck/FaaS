@@ -55,7 +55,6 @@ const size_t ERROR_IN_COMMAND_LINE = 1;
 const size_t SUCCESS = 0;
 const size_t ERROR_UNHANDLED_EXCEPTION = 2;
 
-//Function to send payload to func_client
 void SendPayload(int event_type, struct Payload &p)
 {
   // Create a channel with PORT 50000 and send event request
@@ -92,7 +91,7 @@ void SetPayload(struct Payload &p, int event_type,
   case kFollowUserID:
     p.event_type = kFollowUserID;
     p.event_function = kFollowUser;
-    p.username = vm["username"].as<std::string>();
+    p.username = vm["user"].as<std::string>();
     p.to_follow = vm["follow"].as<std::string>();
     break;
 
@@ -163,13 +162,15 @@ int main(int argc, char *argv[])
       return dylanwarble::ERROR_IN_COMMAND_LINE;
     }
 
+    std::cerr << "HERE";
+
     // Valid command as from here
     if (vm.count("registeruser"))
       SetPayload(command, dylanwarble::kRegisterUserID, vm);
-    else if (vm.count("warble"))
-      SetPayload(command, dylanwarble::kWarbleID, vm);
     else if (vm.count("follow"))
       SetPayload(command, dylanwarble::kFollowUserID, vm);
+    else if (vm.count("warble"))
+      SetPayload(command, dylanwarble::kWarbleID, vm);
     else if (vm.count("read"))
       SetPayload(command, dylanwarble::kReadID, vm);
     else if (vm.count("profile"))
