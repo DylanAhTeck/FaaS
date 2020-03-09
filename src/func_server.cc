@@ -1,35 +1,76 @@
 #include "func_server.h"
 #include <grpcpp/grpcpp.h>
+namespace dylanwarble
+{
 
-#include "func.grpc.pb.h"
-
-namespace dylanwarble {
 Status FuncServiceImpl::hook(ServerContext *context,
                              const HookRequest *hookrequest,
-                             HookReply *hookreply) {
+                             HookReply *hookreply)
+{
   return Status::OK;
 }
 
 Status FuncServiceImpl::unhook(ServerContext *context,
                                const UnhookRequest *unhookrequest,
-                               UnhookReply *unhookreply) {
+                               UnhookReply *unhookreply)
+{
   return Status::OK;
 }
 
 Status FuncServiceImpl::event(ServerContext *context,
                               const EventRequest *eventrequest,
-                              EventReply *eventreply) {
+                              EventReply *eventreply)
+{
+
   const google::protobuf::Any payload = eventrequest->payload();
 
-  RegisteruserRequest request;
-  payload.UnpackTo(&request);
-  std::string s = request.username();
-  std::cerr << s << std::endl;
+  WarbleFunctions func;
+
+  switch (eventrequest->event_type())
+  {
+  case dylanwarble::FunctionID::kRegisterUserID:
+  {
+    RegisteruserRequest request;
+    payload.UnpackTo(&request);
+    std::string username = request.username();
+    func.RegisterUser(username);
+    break;
+  }
+
+    // case kWarbleID:
+    //   SetWarbleRequest(p, payload);
+    //   break;
+
+  case dylanwarble::FunctionID::kFollowUserID:
+  {
+    FollowRequest request;
+    payload.UnpackTo(&request);
+    std::string username = request.username();
+    std::string user_to_follow = request.to_follow();
+    func.Follow(username, user_to_follow);
+    break;
+  }
+    // case kReadID:
+    //   SetReadRequest(p, payload);
+    //   break;
+
+  case kProfileID:
+  {
+    ProfileRequest request;
+    payload.UnpackTo(&request);
+    std::string username = request.username();
+    func.Profile(username);
+    break;
+  }
+  }
+  // std::string s = request.username();
+  // std::cerr << s << std::endl;
 
   return Status::OK;
 }
 
-void RunServer() {
+void RunServer()
+{
   std::string server_address("0.0.0.0:50000");
   FuncServiceImpl service;
 
@@ -48,9 +89,10 @@ void RunServer() {
   server->Wait();
 }
 
-}  // namespace dylanwarble
+} // namespace dylanwarble
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   dylanwarble::RunServer();
   return 0;
 }

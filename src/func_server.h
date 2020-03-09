@@ -1,6 +1,7 @@
 #include <grpcpp/grpcpp.h>
 #include <unordered_map>
-#include "warble.grpc.pb.h"
+#include "warble_server.h"
+#include "func.grpc.pb.h"
 
 // #ifdef BAZEL_BUILD
 // #include "examples/protos/keyvaluestore.grpc.pb.h"
@@ -34,8 +35,10 @@ using warble::Warble;
 using warble::WarbleReply;
 using warble::WarbleRequest;
 
-namespace dylanwarble {
-class FuncServiceImpl final : public FuncService::Service {
+namespace dylanwarble
+{
+class FuncServiceImpl final : public FuncService::Service
+{
   // Allows a service to specify a function
   // for processing of certain message types
   Status hook(ServerContext *context, const HookRequest *hookrequest,
@@ -49,4 +52,4 @@ class FuncServiceImpl final : public FuncService::Service {
   Status event(ServerContext *context, const EventRequest *eventrequest,
                EventReply *eventreply) override;
 };
-}  // namespace dylanwarble
+} // namespace dylanwarble

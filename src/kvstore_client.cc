@@ -9,10 +9,12 @@
 //#include "../kvstore/kvstore.grpc.pb.h"
 #include "kvstore_client.h"
 #include "kvstore.grpc.pb.h"
-namespace dylanwarble {
+namespace dylanwarble
+{
 
 bool KeyValueStoreClient::Put(const std::string &key,
-                              const std::string &value) {
+                              const std::string &value)
+{
   // Data we are sending to the server.
   PutRequest request;
   request.set_value(value);
@@ -29,12 +31,14 @@ bool KeyValueStoreClient::Put(const std::string &key,
   Status status = stub_->put(&context, request, &reply);
 
   // Act upon its status.
-  if (status.ok()) return true;
+  if (status.ok())
+    return true;
 
   return false;
 }
 
-bool KeyValueStoreClient::Remove(const std::string &key) {
+bool KeyValueStoreClient::Remove(const std::string &key)
+{
   // Data we are sending to the server.
   RemoveRequest request;
   request.set_key(key);
@@ -50,12 +54,14 @@ bool KeyValueStoreClient::Remove(const std::string &key) {
   Status status = stub_->remove(&context, request, &reply);
 
   // Act upon its status.
-  if (status.ok()) return true;
+  if (status.ok())
+    return true;
 
   return false;
 }
 
-std::string KeyValueStoreClient::Get(const std::string &key) {
+std::string KeyValueStoreClient::Get(const std::string &key)
+{
   // Context for the client. It could be used to convey extra information to
   // the server and/or tweak certain RPC behaviors.
   ClientContext context;
@@ -72,23 +78,28 @@ std::string KeyValueStoreClient::Get(const std::string &key) {
 
   stream->WritesDone();
   Status status = stream->Finish();
-  if (status.ok()) return reply.value();
 
-  return NULL;
+  std::cerr << "value" << reply.value() << std::endl;
+
+  if (status.ok())
+    return reply.value();
+
+  return "";
 }
 
-}  // namespace dylanwarble
-int main(int argc, char **argv) {
-  dylanwarble::KeyValueStoreClient kvclient(grpc::CreateChannel(
-      "localhost:50001", grpc::InsecureChannelCredentials()));
+} // namespace dylanwarble
+// int main(int argc, char **argv)
+// {
+//   // dylanwarble::KeyValueStoreClient kvclient(grpc::CreateChannel(
+//   //     "localhost:50001", grpc::InsecureChannelCredentials()));
 
-  // Random order of functions for quick initial test
-  kvclient.Get("hep");
-  kvclient.Put("hi", "hi");
-  kvclient.Put("hi", "hello");
-  kvclient.Get("hi");
-  kvclient.Remove("hi");
-  kvclient.Get("hi");
+//   // Random order of functions for quick initial test
+//   // kvclient.Get("hep");
+//   // kvclient.Put("hi", "hi");
+//   // kvclient.Put("hi", "hello");
+//   // kvclient.Get("hi");
+//   // kvclient.Remove("hi");
+//   // kvclient.Get("hi");
 
-  return 0;
-}
+//   return 0;
+// }
