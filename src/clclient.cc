@@ -65,22 +65,18 @@ void ProcessReply(int event_type, struct Payload &p, struct CommandResponse &cr)
     break;
   
   case kWarbleID:
- 
+    if(cr.success == true) std::cout << "Your new warble (ID #" << cr.warbleID << ") was successfully posted." << std::endl;
+    else std::cout << "Your new warble could not be posted. Please try a valid command" << std::endl;
     break;
-  
 
   // Follow user
   case kFollowUserID:
-    {
     if (cr.success == true) std::cout << "User '" << p.username << "'succesfully started following '" << p.to_follow <<"'" << std::endl;
     else std::cout << "User " << p.username << "'s follow request could not be processed." << std::endl;
     break;
-    }
-
 
   // Read warble ID
   case kReadID:
-
     break;
 
   // Get followers and following

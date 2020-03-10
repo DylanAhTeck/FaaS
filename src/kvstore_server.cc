@@ -27,6 +27,8 @@ Status KeyValueStoreServiceImpl::put(ServerContext *context,
 Status KeyValueStoreServiceImpl::get(
     ServerContext *context, ServerReaderWriter<GetReply, GetRequest> *stream)
 {
+
+  //Major Questions: 
   GetRequest request;
   while (stream->Read(&request))
   {

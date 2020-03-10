@@ -37,6 +37,18 @@ using warble::WarbleRequest;
 
 namespace dylanwarble
 {
+
+// Internal data structure to maintain hooked and unhooked functions
+ struct Event
+{
+  Event(int event_id, std::string function_name, bool yes) : event_type(event_id),
+  event_function(function_name), hooked(yes) {};
+
+  int event_type;
+  std::string event_function;
+  bool hooked; 
+};
+
 class FuncServiceImpl final : public FuncService::Service
 {
   // Allows a service to specify a function
@@ -51,5 +63,13 @@ class FuncServiceImpl final : public FuncService::Service
   // Receives events of a particular type with a payload
   Status event(ServerContext *context, const EventRequest *eventrequest,
                EventReply *eventreply) override;
+
+
+  public:
+  //Sets up initial functions for Warble service
+  void HookInitialWarbleFunctions();
+
+  private:
+    std::vector<Event> event_table;
 };
 } // namespace dylanwarble
