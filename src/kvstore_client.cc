@@ -76,6 +76,7 @@ std::string KeyValueStoreClient::Get(const std::string &key)
   stream->Read(&reply);
   // std::cout << key << " : " << reply.value() << "\n";
 
+  //std::vector<std::string> value = reply.value();
   std::string value = reply.value();
 
   stream->WritesDone();

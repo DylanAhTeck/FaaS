@@ -55,6 +55,8 @@ struct CommandResponse
   int event_type;
   bool success;
 
+  int warbleID;
+
   //Each element in vector is a warble in thread specified
   std::vector<std::string> warble_threads;
 
