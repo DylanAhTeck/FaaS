@@ -29,10 +29,4 @@ enum Prefix
     kUsersFollowing = 2,
 
 };
-
-enum Checks
-{
-
-};
-
 } // namespace dylanwarble

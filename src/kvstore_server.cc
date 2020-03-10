@@ -15,18 +15,24 @@
 
 Status KeyValueStoreServiceImpl::put(ServerContext *context,
                                      const PutRequest *putrequest,
-                                     PutReply *putreply) {
+                                     PutReply *putreply)
+{
   umap_.insert(std::make_pair(putrequest->key(), putrequest->value()));
-  if (umap_.find(putrequest->key()) == umap_.end()) return Status::CANCELLED;
+
+  if (umap_.find(putrequest->key()) == umap_.end())
+    return Status::CANCELLED;
   return Status::OK;
 }
 
 Status KeyValueStoreServiceImpl::get(
-    ServerContext *context, ServerReaderWriter<GetReply, GetRequest> *stream) {
+    ServerContext *context, ServerReaderWriter<GetReply, GetRequest> *stream)
+{
   GetRequest request;
-  while (stream->Read(&request)) {
+  while (stream->Read(&request))
+  {
     GetReply reply;
     reply.set_value(umap_[request.key()]);
+    std::cerr << "Value:" << umap_[request.key()] << std::endl;
     stream->Write(reply);
   }
   return Status::OK;
@@ -34,13 +40,16 @@ Status KeyValueStoreServiceImpl::get(
 
 Status KeyValueStoreServiceImpl::remove(ServerContext *context,
                                         const RemoveRequest *removerequest,
-                                        RemoveReply *removereply) {
+                                        RemoveReply *removereply)
+{
   umap_.erase(removerequest->key());
-  if (umap_.find(removerequest->key()) == umap_.end()) return Status::OK;
+  if (umap_.find(removerequest->key()) == umap_.end())
+    return Status::OK;
   return Status::CANCELLED;
 }
 
-void RunServer() {
+void RunServer()
+{
   std::string server_address("0.0.0.0:50001");
   KeyValueStoreServiceImpl service;
 
@@ -59,7 +68,8 @@ void RunServer() {
   server->Wait();
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   RunServer();
   return 0;
 }

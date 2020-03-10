@@ -27,7 +27,7 @@ class WarbleFunctions
 {
 public:
   // Registers the given username
-  void RegisterUser(std::string username);
+  bool RegisterUser(std::string username);
 
   // Posts a new warble by specific user and returns WarbleReply with id of new
   // warble

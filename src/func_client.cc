@@ -85,11 +85,11 @@ void SetProfileRequest(const Payload &p, google::protobuf::Any *payload)
   payload->PackFrom(request);
 }
 
-// This takes in the struct payload and sets the requests
-void FuncClient::Event(const int event_type, const Payload &p)
-{
-  std::cout << p.event_type << p.event_function << p.username << std::endl;
+//Change return variable to be a function
 
+// This takes in the struct payload and sets the requests
+void FuncClient::Event(const int event_type, const Payload &p, CommandResponse &r)
+{
   google::protobuf::Any *payload = new google::protobuf::Any;
 
   switch (event_type)
@@ -125,7 +125,7 @@ void FuncClient::Event(const int event_type, const Payload &p)
   event_request.set_allocated_payload(payload);
 
   // Container for the data we expect from the server.
-  EventReply reply;
+  EventReply event_reply;
 
   // Context for the client. It could be used to convey extra information to
   // the server and/or tweak certain RPC behaviors.
@@ -134,15 +134,47 @@ void FuncClient::Event(const int event_type, const Payload &p)
   // EventReply.payload in this case would be a Warble Reply
 
   // The actual RPC.
-  Status status = stub_->event(&context, event_request, &reply);
+  Status status = stub_->event(&context, event_request, &event_reply);
 
   // Reply will now have payload if request was succesful
-  google::protobuf::Any return_payload = reply.payload();
+  google::protobuf::Any return_payload = event_reply.payload();
 
   // To-do - change this to glog
   if (!status.ok())
   {
-    std::cout << "Error" << std::endl;
+    std::cout << "Func service failed. Please use a valid command." << std::endl;
+    return;
+  }
+
+  switch (event_type)
+  {
+  case kRegisterUserID:
+    r.success = true;
+    return;
+    break;
+
+  // case kWarbleID:
+  //   SetWarbleRequest(p, payload);
+  //   break;
+
+  case kFollowUserID:
+    r.success = true;
+    return;
+    break;
+
+  // case kReadID:
+  //   SetReadRequest(p, payload);
+  //   break;
+
+  case kProfileID:
+    // dylanwarble::ProfileReply reply;
+    // return_payload.UnpackTo(&reply);
+    // r.followers = reply.followers();
+    // r.following = reply.following();
+    break;
+
+  default:
+    std::cerr << "Invalid event_type used in Event function" << std::endl;
     return;
   }
 

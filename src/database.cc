@@ -42,6 +42,7 @@ std::vector<std::string> Database::Get(std::string key)
   else
     return got->second;
 }
+
 bool Database::Remove(std::string key)
 {
   //Gain sole access to map
@@ -60,4 +61,4 @@ bool Database::Remove(std::string key)
 
 } // namespace dylanwarble
 
-int main() { return 1; }
+//int main() { return 1; }

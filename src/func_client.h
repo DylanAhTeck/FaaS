@@ -35,26 +35,6 @@ using warble::WarbleRequest;
 namespace dylanwarble
 {
 
-// // enum for event_id
-// enum FunctionID
-// {
-//   kRegisterUserID = 0,
-//   kWarbleID = 1,
-//   kFollowUserID = 2,
-//   kReadID = 3,
-//   kProfileID = 4,
-// };
-
-// // enum for event
-// enum FunctionName
-// {
-//   kRegisterUser,
-//   kWarble,
-//   kFollowUser,
-//   kRead,
-//   kProfile,
-// };
-
 // Internal datastructure to package data from clclient to func_client
 struct Payload
 {
@@ -66,6 +46,23 @@ struct Payload
   std::string parent_id;
   std::string id;
   std::string to_follow;
+};
+// Internal datastructure to package response data
+struct CommandResponse
+{
+  CommandResponse() : success(false){};
+
+  int event_type;
+  bool success;
+
+  //Each element in vector is a warble in thread specified
+  std::vector<std::string> warble_threads;
+
+  //Each element is the name of one of user's followers
+  std::vector<std::string> followers;
+
+  //Each element is the name of one of user's following
+  std::vector<std::string> following;
 };
 
 class FuncClient
@@ -82,7 +79,7 @@ public:
   void Unhook(const int event_type);
 
   // Requests an event with parameters stored in Payload by clclient
-  void Event(const int event_type, const Payload &p);
+  void Event(const int event_type, const Payload &p, CommandResponse &r);
 
 private:
   std::unique_ptr<FuncService::Stub> stub_;

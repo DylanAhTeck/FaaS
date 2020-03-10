@@ -33,7 +33,10 @@ Status FuncServiceImpl::event(ServerContext *context,
     RegisteruserRequest request;
     payload.UnpackTo(&request);
     std::string username = request.username();
-    func.RegisterUser(username);
+    if (func.RegisterUser(username) == true)
+      return Status::OK;
+    else
+      return Status::CANCELLED;
     break;
   }
 
@@ -47,7 +50,8 @@ Status FuncServiceImpl::event(ServerContext *context,
     payload.UnpackTo(&request);
     std::string username = request.username();
     std::string user_to_follow = request.to_follow();
-    func.Follow(username, user_to_follow);
+    if (func.Follow(username, user_to_follow) == true) return Status::OK;
+    else return Status::CANCELLED;
     break;
   }
     // case kReadID:
