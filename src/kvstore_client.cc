@@ -76,10 +76,11 @@ std::string KeyValueStoreClient::Get(const std::string &key)
   stream->Read(&reply);
   // std::cout << key << " : " << reply.value() << "\n";
 
-  stream->WritesDone();
-  Status status = stream->Finish();
+  std::string value = reply.value();
 
-  std::cerr << "value" << reply.value() << std::endl;
+  stream->WritesDone();
+
+  Status status = stream->Finish();
 
   if (status.ok())
     return reply.value();
@@ -88,6 +89,7 @@ std::string KeyValueStoreClient::Get(const std::string &key)
 }
 
 } // namespace dylanwarble
+
 // int main(int argc, char **argv)
 // {
 //   // dylanwarble::KeyValueStoreClient kvclient(grpc::CreateChannel(

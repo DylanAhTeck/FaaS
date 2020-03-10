@@ -55,13 +55,63 @@ const size_t ERROR_IN_COMMAND_LINE = 1;
 const size_t SUCCESS = 0;
 const size_t ERROR_UNHANDLED_EXCEPTION = 2;
 
+void ProcessReply(int event_type, struct Payload &p, struct CommandResponse &cr)
+{
+  switch (event_type)
+  {
+  case kRegisterUserID:
+    if (cr.success == true) std::cout << "User '" << p.username << "' was succesfully registered." << std::endl;
+    else std::cout << "User " << p.username << " could not be registered." << std::endl;
+    break;
+  
+  case kWarbleID:
+ 
+    break;
+  
+
+  // Follow user
+  case kFollowUserID:
+    {
+    if (cr.success == true) std::cout << "User '" << p.username << "'succesfully started following '" << p.to_follow <<"'" << std::endl;
+    else std::cout << "User " << p.username << "'s follow request could not be processed." << std::endl;
+    break;
+    }
+
+
+  // Read warble ID
+  case kReadID:
+
+    break;
+
+  // Get followers and following
+  case kProfileID:
+  if (cr.success == true) 
+      {
+        std::vector<std::string> followers = cr.followers;
+        std::vector<std::string> following = cr.following;
+
+        std::cout << "User '" << p.username << "' is following:" << std::endl;
+        for (int i = 0; i < cr.following.size(); i++) std::cout << i << ". " << following[i] << std::endl;
+        std::cout << "User '" << p.username << "' has followers:" << std::endl;
+        for (int i = 0; i < cr.followers.size(); i++) std::cout << i << ". " << followers[i] << std::endl;
+      }
+      else std::cout << "User '" << p.username << "'s profile could not be processed." << std::endl;
+    break;
+
+   default:
+    std::cerr << "Error processing reply" << std::endl;
+  }
+}
+
 void SendPayload(int event_type, struct Payload &p)
 {
   // Create a channel with PORT 50000 and send event request
   FuncClient funcclient(grpc::CreateChannel(
       "localhost:50000", grpc::InsecureChannelCredentials()));
 
-  funcclient.Event(event_type, p);
+  CommandResponse res;
+  funcclient.Event(event_type, p, res);
+  ProcessReply(event_type, p, res);
 }
 
 // Function to set payload and send to func_client
@@ -161,8 +211,6 @@ int main(int argc, char *argv[])
       std::cerr << "Error: command requires a specified user" << std::endl;
       return dylanwarble::ERROR_IN_COMMAND_LINE;
     }
-
-    std::cerr << "HERE";
 
     // Valid command as from here
     if (vm.count("registeruser"))
