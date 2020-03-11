@@ -5,6 +5,10 @@ namespace dylanwarble
 
 bool Database::Put(std::string key, std::string value)
 {
+
+  //Locks mutex - only current thread can access map
+  const std::lock_guard<std::mutex> lock(mut);
+
   // Iterator pointing to key-value pair
   auto it = umap_.find(key);
 
@@ -23,6 +27,9 @@ bool Database::Put(std::string key, std::string value)
 
 std::vector<std::string> Database::Get(std::string key)
 {
+
+  //Lock mutex
+  const std::lock_guard<std::mutex> lock(mut);
   // Iterator pointing to key-value pair
   std::unordered_map<std::string, std::vector<std::string>>::const_iterator
       got = umap_.find(key);
@@ -37,6 +44,9 @@ std::vector<std::string> Database::Get(std::string key)
 }
 bool Database::Remove(std::string key)
 {
+  //Gain sole access to map
+  const std::lock_guard<std::mutex> lock(mut);
+
   // Iterator pointing to key-value pair
   std::unordered_map<std::string, std::vector<std::string>>::const_iterator
       got = umap_.find(key);
