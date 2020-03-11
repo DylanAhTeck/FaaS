@@ -45,7 +45,7 @@ clclient: func.pb.o func.grpc.pb.o warble.pb.o warble.grpc.pb.o func_client.o  c
 grpc_headers: kvstore.pb.o kvstore.grpc.pb.o func.pb.o func.grpc.pb.o warble.pb.o warble.grpc.pb.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
-kvstore_server: kvstore.pb.o kvstore.grpc.pb.o kvstore_server.o kvstore_client.o #helper.o
+kvstore_server: kvstore.pb.o kvstore.grpc.pb.o kvstore_server.o #kvstore_client.o #helper.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 kvstore_client: kvstore.pb.o kvstore.grpc.pb.o kvstore_client.o 

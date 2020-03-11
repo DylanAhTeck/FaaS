@@ -10,21 +10,21 @@ Status FuncServiceImpl::hook(ServerContext *context,
   int event_type = hookrequest->event_type();
   const std::string event_function = hookrequest->event_function();
 
-  if(event_type < 0 || event_type > event_table.size()) 
+  if (event_type < 0 || event_type > event_table.size())
   {
     std::cout << "Error: attempting to hook invalid event_type" << std::endl;
     return Status::CANCELLED;
   }
 
   Event new_event(event_type, event_function, true);
-  if(event_table.size() == event_type)
+  if (event_table.size() == event_type)
   {
     event_table.push_back(new_event);
     return Status::OK;
   }
 
   Event current_event = event_table[event_type];
-  if(current_event.hooked == true)
+  if (current_event.hooked == true)
   {
     std::cout << "Event ID is already being used" << std::endl;
     return Status::CANCELLED;
@@ -41,19 +41,19 @@ Status FuncServiceImpl::unhook(ServerContext *context,
 {
   int event_type = unhookrequest->event_type();
 
-  if(event_type < 0 || event_type > event_table.size()) 
+  if (event_type < 0 || event_type > event_table.size())
   {
     std::cout << "Error: attempting to unhook invalid event_type" << std::endl;
     return Status::CANCELLED;
   }
 
   Event current_event = event_table[event_type];
-  if(current_event.hooked == false)
+  if (current_event.hooked == false)
   {
     std::cout << "Event_type is already unhooked" << std::endl;
     return Status::CANCELLED;
   }
-  
+
   //Set event hooked status to false
   event_table[event_type].hooked = false;
   return Status::OK;
@@ -65,16 +65,17 @@ Status FuncServiceImpl::event(ServerContext *context,
 {
 
   const google::protobuf::Any payload = eventrequest->payload();
-
   WarbleFunctions func;
 
-  switch (eventrequest->event_type())
+  int eventid = eventrequest->event_type();
+  switch (eventid)
   {
   case dylanwarble::FunctionID::kRegisterUserID:
   {
     RegisteruserRequest request;
     payload.UnpackTo(&request);
     std::string username = request.username();
+
     if (func.RegisterUser(username) == true)
       return Status::OK;
     else
@@ -82,9 +83,23 @@ Status FuncServiceImpl::event(ServerContext *context,
     break;
   }
 
-    // case kWarbleID:
-    //   SetWarbleRequest(p, payload);
-    //   break;
+  case dylanwarble::FunctionID::kWarbleID:
+  {
+    WarbleRequest request;
+    WarbleReply warble_reply;
+    payload.UnpackTo(&request);
+    std::string username = request.username();
+    std::string text = request.text();
+    int reply_to_warble = -1;
+    //int reply_to_warble = stoi(request.parent_id());
+
+    //Add timestamp later
+    func.PostWarble(username, text, reply_to_warble, warble_reply);
+
+    return Status::OK;
+
+    break;
+  }
 
   case dylanwarble::FunctionID::kFollowUserID:
   {
@@ -92,15 +107,28 @@ Status FuncServiceImpl::event(ServerContext *context,
     payload.UnpackTo(&request);
     std::string username = request.username();
     std::string user_to_follow = request.to_follow();
-    if (func.Follow(username, user_to_follow) == true) return Status::OK;
-    else return Status::CANCELLED;
+    if (func.Follow(username, user_to_follow) == true)
+      return Status::OK;
+    else
+      return Status::CANCELLED;
     break;
   }
-    // case kReadID:
-    //   SetReadRequest(p, payload);
-    //   break;
 
-  case kProfileID:
+  case kReadID:
+  {
+    ReadRequest request;
+    Warble warble;
+    payload.UnpackTo(&request);
+    std::string id = request.warble_id();
+
+    if (func.Read(id, warble) == true)
+      return Status::OK;
+    else
+      return Status::CANCELLED;
+    break;
+  }
+
+  case dylanwarble::FunctionID::kProfileID:
   {
     ProfileRequest request;
     payload.UnpackTo(&request);
@@ -139,8 +167,9 @@ void RunServer()
   server->Wait();
 }
 
-void FuncServiceImpl::HookInitialWarbleFunctions(){
-  
+void FuncServiceImpl::HookInitialWarbleFunctions()
+{
+
   Event registeruser(kRegisterUserID, "Register user", true);
   Event warble(kWarbleID, "Warble", true);
   Event followuser(kFollowUserID, "Follow user", true);
@@ -155,8 +184,8 @@ void FuncServiceImpl::HookInitialWarbleFunctions(){
 
   std::cout << "Setup: hooked the following Warble functions ... " << std::endl;
 
-  for(int i = 0; i < 5; i++) std::cout << i << ") " << event_table[i].event_function << std::endl;
-  
+  for (int i = 0; i < 5; i++)
+    std::cout << i << ") " << event_table[i].event_function << std::endl;
 }
 
 } // namespace dylanwarble
@@ -165,6 +194,6 @@ int main(int argc, char **argv)
 {
   //Includes initial setup of warble functions
   dylanwarble::RunServer();
-  
+
   return 0;
 }

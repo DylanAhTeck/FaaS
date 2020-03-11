@@ -153,18 +153,20 @@ void FuncClient::Event(const int event_type, const Payload &p, CommandResponse &
     return;
     break;
 
-  // case kWarbleID:
-  //   SetWarbleRequest(p, payload);
-  //   break;
+  case kWarbleID:
+    r.success = true;
+    return;
+    break;
 
   case kFollowUserID:
     r.success = true;
     return;
     break;
 
-  // case kReadID:
-  //   SetReadRequest(p, payload);
-  //   break;
+    case kReadID:
+      r.success = true;
+      return;
+      break;
 
   case kProfileID:
     // dylanwarble::ProfileReply reply;

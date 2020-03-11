@@ -64,7 +64,6 @@ class FuncServiceImpl final : public FuncService::Service
   Status event(ServerContext *context, const EventRequest *eventrequest,
                EventReply *eventreply) override;
 
-
   public:
   //Sets up initial functions for Warble service
   void HookInitialWarbleFunctions();

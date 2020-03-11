@@ -60,41 +60,65 @@ void ProcessReply(int event_type, struct Payload &p, struct CommandResponse &cr)
   switch (event_type)
   {
   case kRegisterUserID:
-    if (cr.success == true) std::cout << "User '" << p.username << "' was succesfully registered." << std::endl;
-    else std::cout << "User " << p.username << " could not be registered." << std::endl;
+  {
+    if (cr.success == true)
+      std::cout << "User '" << p.username << "' was succesfully registered." << std::endl;
+    else
+      std::cout << "User " << p.username << " could not be registered." << std::endl;
     break;
-  
+  }
+
   case kWarbleID:
-    if(cr.success == true) std::cout << "Your new warble (ID #" << cr.warbleID << ") was successfully posted." << std::endl;
-    else std::cout << "Your new warble could not be posted. Please try a valid command" << std::endl;
+  {
+    if (cr.success == true)
+      std::cout << "Your new warble (ID #" << cr.warbleID << ") was successfully posted." << std::endl;
+    else
+      std::cout << "Your new warble could not be posted." << std::endl;
     break;
+  }
 
   // Follow user
   case kFollowUserID:
-    if (cr.success == true) std::cout << "User '" << p.username << "'succesfully started following '" << p.to_follow <<"'" << std::endl;
-    else std::cout << "User " << p.username << "'s follow request could not be processed." << std::endl;
+  {
+    if (cr.success == true)
+      std::cout << "User '" << p.username << "'succesfully started following '" << p.to_follow << "'" << std::endl;
+    else
+      std::cout << "User " << p.username << "'s follow request could not be processed." << std::endl;
     break;
+  }
 
   // Read warble ID
   case kReadID:
+  {
+    if (cr.success == true)
+      std::cout << "You have successfully read the warble." << std::endl;
+    else
+      std::cout << "User " << p.username << "'s request to read warble could not be processed." << std::endl;
     break;
+  }
+  break;
 
   // Get followers and following
   case kProfileID:
-  if (cr.success == true) 
-      {
-        std::vector<std::string> followers = cr.followers;
-        std::vector<std::string> following = cr.following;
+  {
+    if (cr.success == true)
+    {
+      std::vector<std::string> followers = cr.followers;
+      std::vector<std::string> following = cr.following;
 
-        std::cout << "User '" << p.username << "' is following:" << std::endl;
-        for (int i = 0; i < cr.following.size(); i++) std::cout << i << ". " << following[i] << std::endl;
-        std::cout << "User '" << p.username << "' has followers:" << std::endl;
-        for (int i = 0; i < cr.followers.size(); i++) std::cout << i << ". " << followers[i] << std::endl;
-      }
-      else std::cout << "User '" << p.username << "'s profile could not be processed." << std::endl;
+      std::cout << "User '" << p.username << "' is following:" << std::endl;
+      for (int i = 0; i < cr.following.size(); i++)
+        std::cout << i << ". " << following[i] << std::endl;
+      std::cout << "User '" << p.username << "' has followers:" << std::endl;
+      for (int i = 0; i < cr.followers.size(); i++)
+        std::cout << i << ". " << followers[i] << std::endl;
+    }
+    else
+      std::cout << "User '" << p.username << "'s profile could not be processed." << std::endl;
     break;
+  }
 
-   default:
+  default:
     std::cerr << "Error processing reply" << std::endl;
   }
 }
