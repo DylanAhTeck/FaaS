@@ -13,6 +13,7 @@ using grpc::ServerBuilder;
 using grpc::ServerContext;
 using grpc::ServerReaderWriter;
 using grpc::Status;
+using grpc::ClientReaderWriter;
 
 using kvstore::GetReply;
 using kvstore::GetRequest;
@@ -22,7 +23,8 @@ using kvstore::PutRequest;
 using kvstore::RemoveReply;
 using kvstore::RemoveRequest;
 
-class KeyValueStoreServiceImpl final : public KeyValueStore::Service {
+class KeyValueStoreServiceImpl final : public KeyValueStore::Service
+{
   // Puts a key,value pair in kvstore internal hashmap
   // Returns Status::OK if succesfull Status::Cancelled if not
   Status put(ServerContext *context, const PutRequest *putrequest,
@@ -39,6 +41,6 @@ class KeyValueStoreServiceImpl final : public KeyValueStore::Service {
   Status remove(ServerContext *context, const RemoveRequest *removerequest,
                 RemoveReply *removereply) override;
 
- private:
+private:
   std::unordered_map<std::string, std::string> umap_;
 };

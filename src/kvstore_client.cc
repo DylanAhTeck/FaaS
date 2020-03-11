@@ -60,49 +60,81 @@ bool KeyValueStoreClient::Remove(const std::string &key)
   return false;
 }
 
-std::string KeyValueStoreClient::Get(const std::string &key)
+std::vector<std::string> KeyValueStoreClient::Get(const std::string &key)
 {
-  // Context for the client. It could be used to convey extra information to
-  // the server and/or tweak certain RPC behaviors.
+
   ClientContext context;
-  auto stream = stub_->get(&context);
+
+  std::shared_ptr<ClientReaderWriter<GetRequest, GetReply>> stream(
+      stub_->get(&context));
 
   GetRequest request;
   request.set_key(key);
   stream->Write(request);
-
-  // Get the value for the sent key
-  GetReply reply;
-  stream->Read(&reply);
-  // std::cout << key << " : " << reply.value() << "\n";
-
-  //std::vector<std::string> value = reply.value();
-  std::string value = reply.value();
-
   stream->WritesDone();
 
+  GetReply reply;
+  std::vector<std::string> response;
+  while (stream->Read(&reply))
+  {
+    response.push_back(reply.value());
+  }
   Status status = stream->Finish();
 
   if (status.ok())
-    return reply.value();
+    return response;
 
-  return "";
+  std::vector<std::string> empty;
+  return empty;
+
+  // Context for the client. It could be used to convey extra information to
+  // the server and/or tweak certain RPC behaviors.
+  // ClientContext context;
+  // auto stream = stub_->get(&context);
+
+  // GetRequest request;
+  // request.set_key(key);
+  // stream->Write(request);
+
+  // // Get the value for the sent key
+  // GetReply reply;
+  // stream->Read(&reply);
+  // // std::cout << key << " : " << reply.value() << "\n";
+
+  // //std::vector<std::string> value = reply.value();
+  // std::string value = reply.value();
+
+  // stream->WritesDone();
+
+  // Status status = stream->Finish();
+
+  // if (status.ok())
+  //   return reply.value();
+
+  // return "";
 }
 
 } // namespace dylanwarble
 
-// int main(int argc, char **argv)
-// {
-//   // dylanwarble::KeyValueStoreClient kvclient(grpc::CreateChannel(
-//   //     "localhost:50001", grpc::InsecureChannelCredentials()));
+int main(int argc, char **argv)
+{
+  dylanwarble::KeyValueStoreClient kvclient(grpc::CreateChannel(
+      "localhost:50001", grpc::InsecureChannelCredentials()));
 
-//   // Random order of functions for quick initial test
-//   // kvclient.Get("hep");
-//   // kvclient.Put("hi", "hi");
-//   // kvclient.Put("hi", "hello");
-//   // kvclient.Get("hi");
-//   // kvclient.Remove("hi");
-//   // kvclient.Get("hi");
+  //Random order of functions for quick initial test
+  std::vector<std::string> response = kvclient.Get("hep");
+  for (int i = 0; i < response.size(); i++)
+    std::cout << response[i] << std::endl;
+  kvclient.Put("hi", "hi");
+  kvclient.Put("hi", "hello");
+  response = kvclient.Get("hi");
+  for (int i = 0; i < response.size(); i++)
+    std::cout << response[i] << std::endl;
+  kvclient.Remove("hi");
 
-//   return 0;
-// }
+  response = kvclient.Get("hi");
+  for (int i = 0; i < response.size(); i++)
+    std::cout << response[i] << std::endl;
+
+  return 0;
+}

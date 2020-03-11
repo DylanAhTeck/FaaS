@@ -17,6 +17,7 @@ using warble::ReadReply;
 using warble::ReadRequest;
 using warble::RegisteruserReply;
 using warble::RegisteruserRequest;
+using warble::Warble;
 using warble::WarbleReply;
 using warble::WarbleRequest;
 
@@ -31,14 +32,14 @@ public:
 
   // Posts a new warble by specific user and returns WarbleReply with id of new
   // warble
-  WarbleReply *PostWarble(std::string username, std::string text,
-                          int reply_to_warble_id);
+  bool PostWarble(std::string username, std::string text,
+                  int reply_to_warble_id, WarbleReply &warble_reply);
 
   // Lets specified user follow another user
   bool Follow(std::string username, std::string user_to_follow);
 
   // Reads a warble thread from the given id
-  ReadReply *Read(int id);
+  bool Read(std::string id, Warble &warble);
 
   // Returns a warble profile
   std::string Profile(std::string username);

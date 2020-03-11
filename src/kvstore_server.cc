@@ -27,14 +27,15 @@ Status KeyValueStoreServiceImpl::put(ServerContext *context,
 Status KeyValueStoreServiceImpl::get(
     ServerContext *context, ServerReaderWriter<GetReply, GetRequest> *stream)
 {
-
-  //Major Questions: 
+  //Major Questions:
   GetRequest request;
+
   while (stream->Read(&request))
   {
     GetReply reply;
-    reply.set_value(umap_[request.key()]);
-    std::cerr << "Value:" << umap_[request.key()] << std::endl;
+    std::string value = umap_[request.key()];
+    reply.set_value(value);
+    //std::cerr << "Value:" << umap_[request.key()] << std::endl;
     stream->Write(reply);
   }
   return Status::OK;

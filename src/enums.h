@@ -2,6 +2,10 @@
 namespace dylanwarble
 {
 
+// Constants for Errors in command-line argument parsing
+const std::string WARBLE = "WARBLE";
+const std::string WARBLETHREAD = "WARBLETHREAD";
+
 // enum for event_id
 enum FunctionID
 {
