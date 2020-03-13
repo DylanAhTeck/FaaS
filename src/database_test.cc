@@ -6,15 +6,17 @@
 // Tests to verify GET, PUT and REMOVE functionality of Database class
 class DatabaseTests : public ::testing::Test {
  public:
-  DatabaseTests() {}
+  DatabaseTests() {
+     db = new Database();
+  }
 
-  ~DatabaseTests() {}
+  ~DatabaseTests() {delete db; }
 
-  void TearDown() { delete db; }
+  void TearDown() { }
 
   // Inputs 3 key-value pairs before every test
   void SetUp() {
-    db = new Database();
+    
     db->Put("OneTwoThree", "One");
     db->Put("OneTwoThree", "Two");
     db->Put("OneTwoThree", "Three");
@@ -26,7 +28,6 @@ class DatabaseTests : public ::testing::Test {
 // Test that getting value works
 TEST_F(DatabaseTests, getSetUpValuesToValidateGet) {
   std::vector<std::string> values = db->Get("OneTwoThree");
-
   EXPECT_EQ(values[0], "One");
   EXPECT_EQ(values[1], "Two");
   EXPECT_EQ(values[2], "Three");

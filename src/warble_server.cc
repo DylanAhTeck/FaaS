@@ -1,4 +1,6 @@
-#include "warble_server.h"
+// Copyright 2020 Dylan Ah Teck
+
+#include "warble_server.h" //NOLINT
 #include <string>
 
 namespace dylanwarble {
@@ -10,10 +12,7 @@ bool WarbleFunctions::UserExists(std::string user) {
 }
 
 // Registers the given username
-bool WarbleFunctions::RegisterUser(
-    std::string
-        username) {  // Create a channel with PORT 50000 and send event request
-
+bool WarbleFunctions::RegisterUser(std::string username) {
   // Key-value store stub
   dylanwarble::KeyValueStoreClient kvclient(grpc::CreateChannel(
       "localhost:50001", grpc::InsecureChannelCredentials()));
@@ -50,6 +49,13 @@ bool WarbleFunctions::Follow(std::string username, std::string user_to_follow) {
     VLOG(google::ERROR) << "FOLLOW REQUEST: User or user to follow does not "
                            "exist. Request failed."
                         << std::endl;
+    return false;
+  }
+
+  // Return error if user attempts to follow himself
+  if (username == user_to_follow) {
+    VLOG(google::ERROR)
+        << "FOLLOW REQUEST: User cannot follow themselves. Request failed.";
     return false;
   }
   const std::string userFollowersKey = kFollowersKey + user_to_follow;
@@ -129,15 +135,16 @@ bool WarbleFunctions::PostWarble(std::string username, std::string text,
   // Default warble_id is "0"
   std::string latest_warble_id = kDefaultWarbleID;
 
-  // Check if allowed to add update function to keyvalue store
-  // To-do - add an update function in database for this
-
   // If latest warble ID exists, retrieve it
-  if (!kvclient.Get(kLatestWarbleID).empty())
+  if (!kvclient.Get(kLatestWarbleID).empty()) {
     latest_warble_id = kvclient.Get(kLatestWarbleID).at(0);
+  }
 
   // Increment latest warble ID, remove the previous, and reinsert the updated
   // one into key-value store
+  // Note: a key-value store UPDATE function would be best for this
+  // to guarantee concurrency. However, not sure if we are allowed to add
+  // additional functions to Key-Value store API
   int latest_warble_id_as_int = stoi(latest_warble_id);
   latest_warble_id_as_int++;
   latest_warble_id = std::to_string(latest_warble_id_as_int);
@@ -147,11 +154,14 @@ bool WarbleFunctions::PostWarble(std::string username, std::string text,
   // Create new warble and serialize
   Warble *warble = new Warble;
 
+  // Get timestamp
   struct timeval time;
   gettimeofday(&time, NULL);
   Timestamp *timestamp = new Timestamp;
   timestamp->set_seconds(time.tv_sec);
   timestamp->set_useconds(time.tv_usec);
+
+  // Set warble fields
   warble->set_allocated_timestamp(timestamp);
   warble->set_username(username);
   warble->set_text(text);
@@ -160,17 +170,17 @@ bool WarbleFunctions::PostWarble(std::string username, std::string text,
 
   // If given, set parent_id and call helper to add new warble to threads of
   // parent warbles
+  // Else just serialize warble
   if (parent_id != kStringNotSet) {
     warble->set_parent_id(parent_id);
     warble->SerializeToString(&serialized_warble_string);
-    kvclient.Put(kWarbleParents + latest_warble_id, parent_id);
+    kvclient.Put(kWarbleParentsKey + latest_warble_id, parent_id);
     std::vector<std::string> parent_warbles =
-        kvclient.Get(kWarbleParents + latest_warble_id);
+        kvclient.Get(kWarbleParentsKey + latest_warble_id);
     AddWarbleToParent(parent_warbles, serialized_warble_string);
-  }
-
-  else
+  } else {
     warble->SerializeToString(&serialized_warble_string);
+  }
 
   // Add new serialized warble to database and return warble
   kvclient.Put(kWarbleKey + latest_warble_id, serialized_warble_string);
@@ -179,7 +189,7 @@ bool WarbleFunctions::PostWarble(std::string username, std::string text,
   return true;
 }
 
-// Helper function to recursive add
+// Recursive helper function to recursively add new Warble to parents
 void WarbleFunctions::AddWarbleToParent(std::vector<std::string> parent_ids,
                                         std::string serialized_warble) {
   dylanwarble::KeyValueStoreClient kvclient(grpc::CreateChannel(
@@ -188,7 +198,7 @@ void WarbleFunctions::AddWarbleToParent(std::vector<std::string> parent_ids,
   if (parent_ids.empty()) return;
 
   std::string parent_id = parent_ids[0];
-  AddWarbleToParent(kvclient.Get(kWarbleParents + parent_id),
+  AddWarbleToParent(kvclient.Get(kWarbleParentsKey + parent_id),
                     serialized_warble);
   kvclient.Put(kWarbleKey + parent_id, serialized_warble);
 

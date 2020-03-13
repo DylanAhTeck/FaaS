@@ -1,14 +1,15 @@
-#include <iostream>
-#include <memory>
-#include <string>
-#include <vector>
+// Copyright 2020 Dylan Ah Teck
 
 #include <glog/logging.h>
 #include <grpcpp/grpcpp.h>
 
-#include "enums.h"
-#include "func.grpc.pb.h"
-#include "warble.grpc.pb.h"
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "enums.h"          // NOLINT
+#include "func.grpc.pb.h"   // NOLINT
+#include "warble.grpc.pb.h" // NOLINT
 
 using grpc::Channel;
 using grpc::ClientContext;
@@ -37,8 +38,7 @@ using warble::WarbleRequest;
 
 namespace dylanwarble
 {
-
-// Internal datastructure to package data from clclient to func_client
+// NOLINT Internal datastructure to package data from clclient to func_client
 struct Payload
 {
   int event_type;
@@ -53,7 +53,7 @@ struct Payload
 // Internal datastructure to package response data
 struct CommandResponse
 {
-  CommandResponse() : success(false){};
+  CommandResponse() : success(false) {}
 
   int event_type;
   bool success;
@@ -77,12 +77,13 @@ struct CommandResponse
   // Each element is the name of one of user's following
   std::vector<std::string> following;
 };
-
+// Class to provide func interface/decoupling
+// Used for clclient to call
 class FuncClient
 {
 public:
   // Creates a new client
-  FuncClient(std::shared_ptr<Channel> channel)
+  explicit FuncClient(std::shared_ptr<Channel> channel)
       : stub_(FuncService::NewStub(channel)) {}
 
   // Hooks an event with int event_type

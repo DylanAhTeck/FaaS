@@ -1,9 +1,12 @@
+// Copyright 2020 Dylan Ah Teck
 
-#include <grpcpp/grpcpp.h>
-#include <boost/program_options.hpp>
-#include <fstream>
-#include <iostream>
-#include "func_client.h"
+#include "func_client.h"  // NOLINT
+
+#include <grpcpp/grpcpp.h>            // NOLINT
+#include <boost/program_options.hpp>  // NOLINT
+
+#include <fstream>   // NOLINT
+#include <iostream>  // NOLINT
 
 /*
 Event type
@@ -39,9 +42,9 @@ namespace dylanwarble {
 // Helper functions to process CommandResponse
 
 // Prints success or failure message after attempting to register user
-void ProcessRegisterUserReply(struct Payload *p, const struct CommandResponse *cr) {
-  if (cr->success == true)
-  {
+void ProcessRegisterUserReply(struct Payload *p,
+                              const struct CommandResponse *cr) {
+  if (cr->success == true) {
     std::cout << "User '" << p->username << "' was succesfully registered."
               << std::endl;
   } else {
@@ -49,7 +52,7 @@ void ProcessRegisterUserReply(struct Payload *p, const struct CommandResponse *c
               << " already exists and could not be registered." << std::endl;
   }
 
-     //Deallocate Payload and CommandResponse 
+  // Deallocate Payload and CommandResponse
   delete cr;
   delete p;
 }
@@ -67,30 +70,27 @@ void ProcessWarbleReply(struct Payload *p, const struct CommandResponse *cr) {
     std::cout << "Text: " << cr->warble_text << std::endl;
     std::cout << "Timestamp: " << cr->timestamp_seconds << " seconds, "
               << cr->timestamp_u_seconds << " milliseconds" << std::endl;
-  }
-
-  else {
+  } else {
     std::cout << "Your new warble could not be posted." << std::endl;
   }
 
-    //Deallocate Payload and CommandResponse 
+  // Deallocate Payload and CommandResponse
   delete cr;
   delete p;
 }
 
 // Prints success or failure message after attempting to follow another user
-void ProcessFollowUserRequest(struct Payload *p, const struct CommandResponse *cr) {
+void ProcessFollowUserRequest(struct Payload *p,
+                              const struct CommandResponse *cr) {
   if (cr->success == true) {
     std::cout << "User '" << p->username << "' successfully started following '"
               << p->to_follow << "'" << std::endl;
-  }
-
-  else {
+  } else {
     std::cout << "User " << p->username
               << "'s follow request could not be processed." << std::endl;
   }
 
-     //Deallocate Payload and CommandResponse 
+  // Deallocate Payload and CommandResponse
   delete cr;
   delete p;
 }
@@ -108,19 +108,18 @@ void ProcessReadRequest(struct Payload *p, const struct CommandResponse *cr) {
         std::cout << "Parent ID #" << cr->warble_threads[i].parent_id() << ")"
                   << std::endl;
       std::cout << "User: " << cr->warble_threads[i].username() << std::endl;
-      std::cout << "Warble: " << cr->warble_threads[i].text() << "" << std::endl;
+      std::cout << "Warble: " << cr->warble_threads[i].text() << ""
+                << std::endl;
       std::cout << "Timestamp: " << cr->warble_threads[i].timestamp().seconds()
                 << " seconds" << std::endl;
     }
-  }
-
-  else {
+  } else {
     std::cout << "User " << p->username
               << "'s request to read warble could not be processed."
               << std::endl;
   }
 
-   //Deallocate Payload and CommandResponse 
+  // Deallocate Payload and CommandResponse
   delete cr;
   delete p;
 }
@@ -128,30 +127,24 @@ void ProcessReadRequest(struct Payload *p, const struct CommandResponse *cr) {
 // Prints the list of user's followers and following
 // If no followers or no following, the list will simply be printed with no
 // users shown
-void ProcessProfileRequest(struct Payload *p, const struct CommandResponse *cr) {
+void ProcessProfileRequest(struct Payload *p,
+                           const struct CommandResponse *cr) {
   if (cr->success == true) {
-    std::cout << "You have successfully read the warble thread starting at ID #"
-              << p->id << ":" << std::endl;
-    for (int i = 0; i < cr->warble_threads.size(); i++) {
-      std::cout << "-----------------------------------------" << std::endl;
-      std::cout << "Warble ID #" << cr->warble_threads[i].id() << ")"
-                << std::endl;
-      if (!cr->warble_threads[i].parent_id().empty())
-        std::cout << "Parent ID #" << cr->warble_threads[i].parent_id() << ")"
-                  << std::endl;
-      std::cout << "User: " << cr->warble_threads[i].username() << std::endl;
-      std::cout << "Warble: " << cr->warble_threads[i].text() << "" << std::endl;
-      std::cout << "Timestamp: " << cr->warble_threads[i].timestamp().seconds()
-                << " seconds" << std::endl;
+    std::cout << "You have successfully found User " << p->username
+              << "'s profile." << std::endl;
+    std::cout << "Followers:" << std::endl;
+    for (int i = 0; i < cr->followers.size(); i++) {
+      std::cout << i << ") " << cr->followers[i] << std::endl;
     }
-  }
-
-  else {
-    std::cout << "User " << p->username
-              << "'s request to read warble could not be processed."
+    std::cout << "Following" << std::endl;
+    for (int i = 0; i < cr->following.size(); i++) {
+      std::cout << i << ") " << cr->following[i] << std::endl;
+    }
+  } else {
+    std::cout << "User " << p->username << "'s profile could not be processed."
               << std::endl;
   }
-  //Deallocate Payload and CommandResponse 
+  // Deallocate Payload and CommandResponse
   delete cr;
   delete p;
 }
@@ -288,7 +281,7 @@ bool ValidCommand(const boost::program_options::variables_map &vm) {
 }  // namespace dylanwarble
 
 int main(int argc, char *argv[]) {
-  dylanwarble::Payload* payload = new dylanwarble::Payload;
+  dylanwarble::Payload *payload = new dylanwarble::Payload;
   namespace po = boost::program_options;
 
   // Initialize Google's logging library.
@@ -315,8 +308,10 @@ int main(int argc, char *argv[]) {
     po::notify(vm);
 
     // Basic error checking done in helper function
-    if (!dylanwarble::ValidCommand(vm))
+    if (!dylanwarble::ValidCommand(vm)) {
+      delete payload;
       return dylanwarble::ERROR_IN_COMMAND_LINE;
+    }
 
     // Valid command as from here
     if (vm.count("registeruser")) {
@@ -336,6 +331,7 @@ int main(int argc, char *argv[]) {
 
   // Catches exception thrown when using boost program options
   catch (po::error &ex) {
+    delete payload;
     std::cerr << ex.what() << '\n';
     return dylanwarble::ERROR_UNHANDLED_EXCEPTION;
   }

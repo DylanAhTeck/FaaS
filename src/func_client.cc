@@ -1,9 +1,7 @@
-#include "func_client.h"
-#include <glog/logging.h>
-#include <iostream>
+// Copyright 2020 Dylan Ah Teck
+#include "func_client.h"  // NOLINT
 
 namespace dylanwarble {
-
 // Allows service to specify that a function is valid
 bool FuncClient::Hook(const int event_type, const std::string &event_function) {
   // Data we are sending to the server.
@@ -91,48 +89,54 @@ void SetProfileRequest(const Payload *p, google::protobuf::Any *payload) {
 // TO SEND TO CL_CLIENT - Helper functions to unpack reply messages
 // and store Warble message data in a CommandResponse struct
 
+// RegisterUser simply returns success
 void SetRegisterUserReply(CommandResponse *r,
                           const google::protobuf::Any &return_payload) {
   r->success = true;
   return;
 }
 
-void SetWarbleReply(CommandResponse *r, const google::protobuf::Any &return_payload) {
+// Warble sets the values for CommandResponse and returns
+void SetWarbleReply(CommandResponse *r,
+                    const google::protobuf::Any &return_payload) {
   WarbleReply reply;
-
   return_payload.UnpackTo(&reply);
+
   r->success = true;
-
   r->warbleID = reply.warble().id();
-
   r->warble_text = reply.warble().text();
-
   r->reply_id = reply.warble().parent_id();
   r->username = reply.warble().username();
 
   Timestamp timestamp = reply.warble().timestamp();
   r->timestamp_seconds = timestamp.seconds();
   r->timestamp_u_seconds = timestamp.useconds();
-
   return;
 }
 
+// FollowUser simply returns success
 void SetFollowUserReply(CommandResponse *r,
                         const google::protobuf::Any &return_payload) {
   r->success = true;
   return;
 }
 
-void SetReadReply(CommandResponse *r, const google::protobuf::Any &return_payload) {
+// Read adds warbles to CommandResponse's warble vector and returns
+void SetReadReply(CommandResponse *r,
+                  const google::protobuf::Any &return_payload) {
   ReadReply reply;
   return_payload.UnpackTo(&reply);
 
-  for (int i = 0; i < reply.warbles_size(); i++)
+  for (int i = 0; i < reply.warbles_size(); i++) {
     r->warble_threads.push_back(reply.warbles(i));
+  }
 
   r->success = true;
   return;
 }
+
+// Profile reads in followers and following vectors and
+// passes values to CommandResponse
 void SetProfileReply(CommandResponse *r,
                      const google::protobuf::Any &return_payload) {
   ProfileReply reply;
@@ -140,16 +144,20 @@ void SetProfileReply(CommandResponse *r,
 
   std::vector<std::string> followers;
   std::vector<std::string> following;
-  for (int i = 0; i < reply.followers_size(); i++)
+
+  for (int i = 0; i < reply.followers_size(); i++) {
     followers.push_back(reply.followers(i));
-  for (int i = 0; i < reply.following_size(); i++)
+  }
+  for (int i = 0; i < reply.following_size(); i++) {
     following.push_back(reply.following(i));
+  }
 
   r->followers = followers;
   r->following = following;
   r->success = true;
   return;
 }
+
 // This takes in the struct payload and sets the requests
 // Void function since success/failure stores in CommandResponse success flag
 void FuncClient::Event(const int event_type, const Payload *p,
@@ -198,9 +206,8 @@ void FuncClient::Event(const int event_type, const Payload *p,
 
   // Reply will now have payload if request was succesful
   google::protobuf::Any return_payload = event_reply.payload();
-  // To-do look whether packFrom deallocates payload automatically
 
-  // To-do - change this to glog
+  // Check for failure and failure message
   if (!status.ok()) {
     VLOG(google::ERROR)
         << "Func service failed. The user or id may not exist. Please "
@@ -208,6 +215,7 @@ void FuncClient::Event(const int event_type, const Payload *p,
     return;
   }
 
+  // If reaches here, means event was successful
   switch (event_type) {
     case kRegisterUserID: {
       SetRegisterUserReply(r, return_payload);
@@ -233,5 +241,7 @@ void FuncClient::Event(const int event_type, const Payload *p,
       VLOG(google::ERROR) << "Invalid event_type used in event function.";
       return;
   }
+  VLOG(google::INFO) << "Func service of Event ID " << event_type
+                     << " was successful.";
 }
 }  // namespace dylanwarble

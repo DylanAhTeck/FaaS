@@ -1,10 +1,16 @@
+// Copyright 2020 Dylan Ah Teck
+
 #include <glog/logging.h>
 #include <grpcpp/grpcpp.h>
 #include <sys/time.h>
 #include <time.h>
+
+#include <vector>
+
 #include "enums.h"
 #include "kvstore_client.h"
 #include "warble.grpc.pb.h"
+
 
 using grpc::Server;
 using grpc::ServerBuilder;

@@ -1,14 +1,15 @@
+// Copyright 2020 Dylan Ah Teck
+
 #include <glog/logging.h>
 #include <grpcpp/grpcpp.h>
-#include <unordered_map>
-#include "func.grpc.pb.h"
-#include "warble_server.h"
 
-// #ifdef BAZEL_BUILD
-// #include "examples/protos/keyvaluestore.grpc.pb.h"
-// #else
-#include "func.grpc.pb.h"
-//#endif
+#include <string>
+#include <unordered_map>
+#include <vector>
+#include <memory> 
+
+#include "func.grpc.pb.h" //NOLINT
+#include "warble_server.h"  //NOLINT
 
 using grpc::Server;
 using grpc::ServerBuilder;
@@ -41,7 +42,7 @@ namespace dylanwarble {
 // Internal data structure to maintain hooked and unhooked functions
 struct Event {
   Event(int event_id, std::string function_name, bool yes)
-      : event_type(event_id), event_function(function_name), hooked(yes){};
+      : event_type(event_id), event_function(function_name), hooked(yes) {}
 
   int event_type;
   std::string event_function;
@@ -49,16 +50,18 @@ struct Event {
 };
 
 class FuncServiceImpl final : public FuncService::Service {
-  // Allows a service to specify a function
-  // for processing of certain message types
+  // Allows a function to be added to Func service
+  // Return Status::OK if successful, Status::CANCELLED if not
   Status hook(ServerContext *context, const HookRequest *hookrequest,
               HookReply *hookreply) override;
 
-  // Removes/unhooks a function from executing on a particular message type
+  // Removes a function from Func service
+  // Return Status::OK if successful, Status::CANCELLED if not
   Status unhook(ServerContext *context, const UnhookRequest *unhookrequest,
                 UnhookReply *unhookreply) override;
 
-  // Receives events of a particular type with a payload
+  // Receives events of a particular type with a payload, processes request
+  // Return Status::OK if successful, Status::CANCELLED if not
   Status event(ServerContext *context, const EventRequest *eventrequest,
                EventReply *eventreply) override;
 
@@ -69,4 +72,5 @@ class FuncServiceImpl final : public FuncService::Service {
  private:
   std::vector<Event> event_table;
 };
+
 }  // namespace dylanwarble
