@@ -35,10 +35,12 @@ using warble::Warble;
 using warble::WarbleReply;
 using warble::WarbleRequest;
 
-namespace dylanwarble {
+namespace dylanwarble
+{
 
 // Internal datastructure to package data from clclient to func_client
-struct Payload {
+struct Payload
+{
   int event_type;
   std::string event_function;
 
@@ -49,7 +51,8 @@ struct Payload {
   std::string to_follow;
 };
 // Internal datastructure to package response data
-struct CommandResponse {
+struct CommandResponse
+{
   CommandResponse() : success(false){};
 
   int event_type;
@@ -75,8 +78,9 @@ struct CommandResponse {
   std::vector<std::string> following;
 };
 
-class FuncClient {
- public:
+class FuncClient
+{
+public:
   // Creates a new client
   FuncClient(std::shared_ptr<Channel> channel)
       : stub_(FuncService::NewStub(channel)) {}
@@ -90,8 +94,8 @@ class FuncClient {
   // Requests an event with parameters stored in Payload by clclient
   void Event(const int event_type, const Payload *p, CommandResponse *r);
 
- private:
+private:
   std::unique_ptr<FuncService::Stub> stub_;
 };
 
-}  // namespace dylanwarble
+} // namespace dylanwarble

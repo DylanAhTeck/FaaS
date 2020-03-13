@@ -153,7 +153,7 @@ void SetProfileReply(CommandResponse *r,
 // This takes in the struct payload and sets the requests
 // Void function since success/failure stores in CommandResponse success flag
 void FuncClient::Event(const int event_type, const Payload *p,
-                       const CommandResponse *r) {
+                       CommandResponse *r) {
   google::protobuf::Any *payload = new google::protobuf::Any;
 
   // Switch according to event_type and set Request with Payload data
