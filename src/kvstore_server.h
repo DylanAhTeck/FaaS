@@ -5,15 +5,16 @@
 // #ifdef BAZEL_BUILD
 // #include "examples/protos/keyvaluestore.grpc.pb.h"
 // #else
+#include "database.h"
 #include "kvstore.grpc.pb.h"
 //#endif
 
+using grpc::ClientReaderWriter;
 using grpc::Server;
 using grpc::ServerBuilder;
 using grpc::ServerContext;
 using grpc::ServerReaderWriter;
 using grpc::Status;
-using grpc::ClientReaderWriter;
 
 using kvstore::GetReply;
 using kvstore::GetRequest;
@@ -23,8 +24,8 @@ using kvstore::PutRequest;
 using kvstore::RemoveReply;
 using kvstore::RemoveRequest;
 
-class KeyValueStoreServiceImpl final : public KeyValueStore::Service
-{
+namespace dylanwarble {
+class KeyValueStoreServiceImpl final : public KeyValueStore::Service {
   // Puts a key,value pair in kvstore internal hashmap
   // Returns Status::OK if succesfull Status::Cancelled if not
   Status put(ServerContext *context, const PutRequest *putrequest,
@@ -41,6 +42,9 @@ class KeyValueStoreServiceImpl final : public KeyValueStore::Service
   Status remove(ServerContext *context, const RemoveRequest *removerequest,
                 RemoveReply *removereply) override;
 
-private:
-  std::unordered_map<std::string, std::string> umap_;
+ private:
+  // std::unordered_map<std::string, std::string> umap_;
+  Database internal_db_;
 };
+
+}  // namespace dylanwarble

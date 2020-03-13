@@ -1,7 +1,8 @@
+#include <glog/logging.h>
 #include <grpcpp/grpcpp.h>
 #include <unordered_map>
-#include "warble_server.h"
 #include "func.grpc.pb.h"
+#include "warble_server.h"
 
 // #ifdef BAZEL_BUILD
 // #include "examples/protos/keyvaluestore.grpc.pb.h"
@@ -35,22 +36,19 @@ using warble::Warble;
 using warble::WarbleReply;
 using warble::WarbleRequest;
 
-namespace dylanwarble
-{
+namespace dylanwarble {
 
 // Internal data structure to maintain hooked and unhooked functions
- struct Event
-{
-  Event(int event_id, std::string function_name, bool yes) : event_type(event_id),
-  event_function(function_name), hooked(yes) {};
+struct Event {
+  Event(int event_id, std::string function_name, bool yes)
+      : event_type(event_id), event_function(function_name), hooked(yes){};
 
   int event_type;
   std::string event_function;
-  bool hooked; 
+  bool hooked;
 };
 
-class FuncServiceImpl final : public FuncService::Service
-{
+class FuncServiceImpl final : public FuncService::Service {
   // Allows a service to specify a function
   // for processing of certain message types
   Status hook(ServerContext *context, const HookRequest *hookrequest,
@@ -64,11 +62,11 @@ class FuncServiceImpl final : public FuncService::Service
   Status event(ServerContext *context, const EventRequest *eventrequest,
                EventReply *eventreply) override;
 
-  public:
-  //Sets up initial functions for Warble service
+ public:
+  // Sets up initial functions for Warble service
   void HookInitialWarbleFunctions();
 
-  private:
-    std::vector<Event> event_table;
+ private:
+  std::vector<Event> event_table;
 };
-} // namespace dylanwarble
+}  // namespace dylanwarble

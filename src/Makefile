@@ -39,13 +39,13 @@ vpath %.proto $(PROTOS_PATH)
 
 all: system-check clclient kvstore_server func_server  #func_client kvstore_client warble_server
 
-clclient: func.pb.o func.grpc.pb.o warble.pb.o warble.grpc.pb.o func_client.o  clclient.o -lboost_program_options
+clclient: func.pb.o func.grpc.pb.o warble.pb.o warble.grpc.pb.o func_client.o  clclient.o -lboost_program_options -lglog
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 grpc_headers: kvstore.pb.o kvstore.grpc.pb.o func.pb.o func.grpc.pb.o warble.pb.o warble.grpc.pb.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
-kvstore_server: kvstore.pb.o kvstore.grpc.pb.o kvstore_server.o #kvstore_client.o #helper.o
+kvstore_server: kvstore.pb.o kvstore.grpc.pb.o kvstore_server.o database.o -lglog #kvstore_client.o #helper.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 kvstore_client: kvstore.pb.o kvstore.grpc.pb.o kvstore_client.o 
@@ -54,7 +54,7 @@ kvstore_client: kvstore.pb.o kvstore.grpc.pb.o kvstore_client.o
 warble_server: warble.pb.o warble.grpc.pb.o warble_server.o kvstore.pb.o kvstore.grpc.pb.o kvstore_client.o #helper.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
-func_server: func.pb.o func.grpc.pb.o func_server.o warble.pb.o warble.grpc.pb.o kvstore.pb.o kvstore.grpc.pb.o  kvstore_client.o warble_server.o database.o#helper.o
+func_server: func.pb.o func.grpc.pb.o func_server.o warble.pb.o warble.grpc.pb.o kvstore.pb.o kvstore.grpc.pb.o  kvstore_client.o warble_server.o database.o -lglog #helper.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 func_client: func.pb.o func.grpc.pb.o func_client.o warble.grpc.pb.o warble.pb.o

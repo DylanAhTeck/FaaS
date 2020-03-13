@@ -1,141 +1,168 @@
 #include "func_server.h"
-#include <grpcpp/grpcpp.h>
-namespace dylanwarble
-{
+
+namespace dylanwarble {
 
 Status FuncServiceImpl::hook(ServerContext *context,
                              const HookRequest *hookrequest,
-                             HookReply *hookreply)
-{
+                             HookReply *hookreply) {
   int event_type = hookrequest->event_type();
   const std::string event_function = hookrequest->event_function();
 
-  if (event_type < 0 || event_type > event_table.size())
-  {
+  if (event_type < 0 || event_type > event_table.size()) {
     std::cout << "Error: attempting to hook invalid event_type" << std::endl;
     return Status::CANCELLED;
   }
 
   Event new_event(event_type, event_function, true);
-  if (event_table.size() == event_type)
-  {
+  if (event_table.size() == event_type) {
     event_table.push_back(new_event);
     return Status::OK;
   }
 
   Event current_event = event_table[event_type];
-  if (current_event.hooked == true)
-  {
+  if (current_event.hooked == true) {
     std::cout << "Event ID is already being used" << std::endl;
     return Status::CANCELLED;
   }
 
-  //Set the event at proper index to new event
+  // Set the event at proper index to new event
   event_table[event_type] = new_event;
   return Status::OK;
 }
 
 Status FuncServiceImpl::unhook(ServerContext *context,
                                const UnhookRequest *unhookrequest,
-                               UnhookReply *unhookreply)
-{
+                               UnhookReply *unhookreply) {
   int event_type = unhookrequest->event_type();
 
-  if (event_type < 0 || event_type > event_table.size())
-  {
+  if (event_type < 0 || event_type > event_table.size()) {
     std::cout << "Error: attempting to unhook invalid event_type" << std::endl;
     return Status::CANCELLED;
   }
 
   Event current_event = event_table[event_type];
-  if (current_event.hooked == false)
-  {
+  if (current_event.hooked == false) {
     std::cout << "Event_type is already unhooked" << std::endl;
     return Status::CANCELLED;
   }
 
-  //Set event hooked status to false
+  // Set event hooked status to false
   event_table[event_type].hooked = false;
   return Status::OK;
 }
 
 Status FuncServiceImpl::event(ServerContext *context,
                               const EventRequest *eventrequest,
-                              EventReply *eventreply)
-{
-
+                              EventReply *eventreply) {
   const google::protobuf::Any payload = eventrequest->payload();
-  WarbleFunctions func;
+  google::protobuf::Any *return_payload = new google::protobuf::Any;
+  WarbleFunctions warble_service;
 
   int eventid = eventrequest->event_type();
-  switch (eventid)
-  {
-  case dylanwarble::FunctionID::kRegisterUserID:
-  {
-    RegisteruserRequest request;
-    payload.UnpackTo(&request);
-    std::string username = request.username();
+  switch (eventid) {
+    case dylanwarble::FunctionID::kRegisterUserID: {
+      RegisteruserRequest request;
+      payload.UnpackTo(&request);
+      std::string username = request.username();
 
-    if (func.RegisterUser(username) == true)
+      if (warble_service.RegisterUser(username) == true)
+        return Status::OK;
+      else
+        return Status::CANCELLED;
+      break;
+    }
+
+    case dylanwarble::FunctionID::kWarbleID: {
+      // Unpack message
+      WarbleRequest request;
+      payload.UnpackTo(&request);
+
+      // Retrieve data from request
+      std::string username = request.username();
+      std::string text = request.text();
+      std::string reply_to_warble = request.parent_id();
+
+      // To-do add timestamp later
+
+      // Call warble function
+      WarbleReply warble_reply;
+      bool success = warble_service.PostWarble(username, text, reply_to_warble,
+                                               warble_reply);
+
+      // Return status if warble function was unsuccessful
+      if (!success) return Status::CANCELLED;
+
+      // Package and send reply
+      return_payload->PackFrom(warble_reply);
+      eventreply->set_allocated_payload(return_payload);
       return Status::OK;
-    else
-      return Status::CANCELLED;
-    break;
-  }
 
-  case dylanwarble::FunctionID::kWarbleID:
-  {
-    WarbleRequest request;
-    WarbleReply warble_reply;
-    payload.UnpackTo(&request);
-    std::string username = request.username();
-    std::string text = request.text();
-    int reply_to_warble = -1;
-    //int reply_to_warble = stoi(request.parent_id());
+      break;
+    }
 
-    //Add timestamp later
-    func.PostWarble(username, text, reply_to_warble, warble_reply);
+    case kFollowUserID: {
+      FollowRequest request;
+      payload.UnpackTo(&request);
+      std::string username = request.username();
+      std::string user_to_follow = request.to_follow();
+      if (warble_service.Follow(username, user_to_follow) == true)
+        return Status::OK;
+      else
+        return Status::CANCELLED;
+      break;
+    }
 
-    return Status::OK;
+    case kReadID: {
+      ReadRequest request;
+      Warble warble;
+      payload.UnpackTo(&request);
+      std::vector<Warble *> warble_thread;
+      std::string id = request.warble_id();
 
-    break;
-  }
+      if (warble_service.Read(id, warble_thread) != true)
+        return Status::CANCELLED;
 
-  case dylanwarble::FunctionID::kFollowUserID:
-  {
-    FollowRequest request;
-    payload.UnpackTo(&request);
-    std::string username = request.username();
-    std::string user_to_follow = request.to_follow();
-    if (func.Follow(username, user_to_follow) == true)
+      ReadReply reply;
+
+      for (int i = 0; i < warble_thread.size(); i++) {
+        Warble *warble = reply.add_warbles();
+        warble->set_id(warble_thread[i]->id());
+        warble->set_text(warble_thread[i]->text());
+        warble->set_parent_id(warble_thread[i]->parent_id());
+        warble->set_username(warble_thread[i]->username());
+
+        Timestamp *timestamp_ptr = new Timestamp;
+        timestamp_ptr->set_seconds(warble_thread[i]->timestamp().seconds());
+        timestamp_ptr->set_useconds(warble_thread[i]->timestamp().useconds());
+        warble->set_allocated_timestamp(timestamp_ptr);
+      }
+
+      return_payload->PackFrom(reply);
+      eventreply->set_allocated_payload(return_payload);
       return Status::OK;
-    else
-      return Status::CANCELLED;
-    break;
-  }
+      break;
+    }
 
-  case kReadID:
-  {
-    ReadRequest request;
-    Warble warble;
-    payload.UnpackTo(&request);
-    std::string id = request.warble_id();
+    case dylanwarble::FunctionID::kProfileID: {
+      ProfileRequest request;
+      payload.UnpackTo(&request);
+      std::string username = request.username();
+      std::vector<std::string> followers;
+      std::vector<std::string> following;
 
-    if (func.Read(id, warble) == true)
+      if (warble_service.Profile(username, followers, following) == false)
+        return Status::CANCELLED;
+
+      ProfileReply reply;
+      for (int i = 0; i < followers.size(); i++)
+        reply.add_followers(followers[i]);
+      for (int i = 0; i < following.size(); i++)
+        reply.add_following(following[i]);
+
+      return_payload->PackFrom(reply);
+      eventreply->set_allocated_payload(return_payload);
       return Status::OK;
-    else
-      return Status::CANCELLED;
-    break;
-  }
-
-  case dylanwarble::FunctionID::kProfileID:
-  {
-    ProfileRequest request;
-    payload.UnpackTo(&request);
-    std::string username = request.username();
-    func.Profile(username);
-    break;
-  }
+    }
   }
   // std::string s = request.username();
   // std::cerr << s << std::endl;
@@ -143,12 +170,11 @@ Status FuncServiceImpl::event(ServerContext *context,
   return Status::OK;
 }
 
-void RunServer()
-{
+void RunServer() {
   std::string server_address("0.0.0.0:50000");
   FuncServiceImpl service;
 
-  //Hook initial warble functions in setup of func infrastructure
+  // Hook initial warble functions in setup of func infrastructure
   service.HookInitialWarbleFunctions();
 
   ServerBuilder builder;
@@ -167,9 +193,7 @@ void RunServer()
   server->Wait();
 }
 
-void FuncServiceImpl::HookInitialWarbleFunctions()
-{
-
+void FuncServiceImpl::HookInitialWarbleFunctions() {
   Event registeruser(kRegisterUserID, "Register user", true);
   Event warble(kWarbleID, "Warble", true);
   Event followuser(kFollowUserID, "Follow user", true);
@@ -188,11 +212,15 @@ void FuncServiceImpl::HookInitialWarbleFunctions()
     std::cout << i << ") " << event_table[i].event_function << std::endl;
 }
 
-} // namespace dylanwarble
+}  // namespace dylanwarble
 
-int main(int argc, char **argv)
-{
-  //Includes initial setup of warble functions
+int main(int argc, char **argv) {
+  // Initialize Google's logging library.
+  google::InitGoogleLogging(argv[0]);
+
+  FLAGS_logtostderr = 1;
+
+  // Includes initial setup of warble functions
   dylanwarble::RunServer();
 
   return 0;

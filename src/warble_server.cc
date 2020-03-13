@@ -1,132 +1,221 @@
 #include "warble_server.h"
 #include <string>
 
-namespace dylanwarble
-{
+namespace dylanwarble {
+// Helper: returns true if user already exists in key-value store
+bool WarbleFunctions::UserExists(std::string user) {
+  dylanwarble::KeyValueStoreClient kvclient(grpc::CreateChannel(
+      "localhost:50001", grpc::InsecureChannelCredentials()));
+  return !kvclient.Get(kUserKey + user).empty();
+}
 
 // Registers the given username
-bool WarbleFunctions::RegisterUser(std::string username)
-{ // Create a channel with PORT 50000 and send event request
+bool WarbleFunctions::RegisterUser(
+    std::string
+        username) {  // Create a channel with PORT 50000 and send event request
 
-    // dylanwarble::KeyValueStoreClient kvclient(grpc::CreateChannel(
-    //     "localhost:50001", grpc::InsecureChannelCredentials()));
+  // Key-value store stub
+  dylanwarble::KeyValueStoreClient kvclient(grpc::CreateChannel(
+      "localhost:50001", grpc::InsecureChannelCredentials()));
 
-    // //Prefix kUser;
-    // const std::string userKey = "USER" + username;
-    // bool success = kvclient.Put(userKey, username);
+  // Fail if user already exists
+  if (UserExists(username)) {
+    VLOG(google::ERROR)
+        << "REGISTER REQUEST: User already exists. Request failed.";
+    return false;
+  }
 
-    // if (success)
-    // {
-    //     std::cout << "Register User was Succesful" << std::endl;
-    //     return true;
-    // }
+  const std::string userKey = kUserKey + username;
 
-    // std::cout << "Error occured whilst registering user" << std::endl;
-    // return false;
+  // Register user and return success flag
+  bool success = kvclient.Put(userKey, username);
+  // Add to glog
+  if (success) {
+    VLOG(google::INFO) << "REGISTER REQUEST: Register user was successful."
+                       << std::endl;
+    return true;
+  }
+  VLOG(google::ERROR) << "Error occured whilst registering user. " << std::endl;
+  return false;
 }
 
 // Lets specified user follow another user
-bool WarbleFunctions::Follow(std::string username, std::string user_to_follow)
-{
-    // dylanwarble::KeyValueStoreClient kvclient(grpc::CreateChannel(
-    //     "localhost:50001", grpc::InsecureChannelCredentials()));
+bool WarbleFunctions::Follow(std::string username, std::string user_to_follow) {
+  // Key-value store stub
+  dylanwarble::KeyValueStoreClient kvclient(grpc::CreateChannel(
+      "localhost:50001", grpc::InsecureChannelCredentials()));
 
-    // //Prefix kUser;
-    // const std::string USER = "USER";
-    // if (kvclient.Get(USER + username) == "" || (kvclient.Get(USER + user_to_follow) == ""))
-    // {
-    //     std::cout << "User to follow or User follower does not exist" << std::endl;
-    //     return false;
-    // }
+  // Return error if user or user to follow does not exist
+  if (!UserExists(username) || !UserExists(user_to_follow)) {
+    VLOG(google::ERROR) << "FOLLOW REQUEST: User or user to follow does not "
+                           "exist. Request failed."
+                        << std::endl;
+    return false;
+  }
+  const std::string userFollowersKey = kFollowersKey + user_to_follow;
 
-    // //To-do - check that user isn't already following user_to_follow
-    // Prefix kUserFollowers;
-    // const std::string userFollowersKey = "FOLLOWERS" + user_to_follow;
-    // //db.Put(std::to_string(kUserFollowers) + user_to_follow, username);
-    // kvclient.Put(userFollowersKey, username);
+  // Check if user already follows user_to_follow
+  std::vector<std::string> followers = kvclient.Get(userFollowersKey);
+  for (int i = 0; i < followers.size(); i++) {
+    if (followers[i] == username) {
+      VLOG(google::ERROR) << "FOLLOW REQUEST: User is already following that "
+                             "person. Request failed."
+                          << std::endl;
+      return false;
+    }
+  }
 
-    // Prefix kUserFollowing;
-    // const std::string userFollowingKey = "FOLLOWING" + username;
-    // //db.Put(std::to_string(kUserFollowers) + user_to_follow, username);
-    // kvclient.Put(userFollowersKey, user_to_follow);
+  // Add user as follower to user_to_follow
+  kvclient.Put(userFollowersKey, username);
 
-    // std::cout << username << " began following " << user_to_follow << std::endl;
-    // return true;
+  // Add user_to_follow as someone that user follows
+  const std::string userFollowingKey = kFollowingKey + username;
+  kvclient.Put(userFollowingKey, user_to_follow);
+
+  VLOG(google::INFO) << username << " began following " << user_to_follow
+                     << ".";
+  return true;
 }
 
 // Reads a warble thread from the given id
-bool WarbleFunctions::Read(std::string id, Warble &warble)
-{
-    // dylanwarble::KeyValueStoreClient kvclient(grpc::CreateChannel(
-    //     "localhost:50001", grpc::InsecureChannelCredentials()));
+bool WarbleFunctions::Read(std::string id,
+                           std::vector<Warble *> &warble_thread) {
+  // Key-value store stub
+  dylanwarble::KeyValueStoreClient kvclient(grpc::CreateChannel(
+      "localhost:50001", grpc::InsecureChannelCredentials()));
 
-    // if (kvclient.Get(WARBLETHREAD + id) == "")
-    //     return false;
+  // Return error if id does exist
+  if (kvclient.Get(kWarbleKey + id).empty()) {
+    VLOG(google::ERROR) << "The warble does not exist. Request failed.";
+    return false;
+  }
+
+  // Vector to hold the serialized warble strings
+  std::vector<std::string> serialized_warbles = kvclient.Get(kWarbleKey + id);
+
+  // Parse warble to strings
+  for (int i = 0; i < serialized_warbles.size(); i++) {
+    Warble *warble = new Warble;
+    if (warble->ParseFromString(serialized_warbles[i]) == false) return false;
+    warble_thread.push_back(warble);
+  }
+
+  return true;
 }
 
 // Posts a new warble by specific user and returns WarbleReply with id of new
 // warble
 bool WarbleFunctions::PostWarble(std::string username, std::string text,
-                                 int reply_to_warble_id, WarbleReply &warble_reply)
-{
-    // dylanwarble::KeyValueStoreClient kvclient(grpc::CreateChannel(
-    //     "localhost:50001", grpc::InsecureChannelCredentials()));
+                                 std::string parent_id,
+                                 WarbleReply &warble_reply) {
+  dylanwarble::KeyValueStoreClient kvclient(grpc::CreateChannel(
+      "localhost:50001", grpc::InsecureChannelCredentials()));
 
-    // const std::string warbleids = "WARBLEIDS";
+  // Return false if parent_id is invalid
+  if (parent_id != kStringNotSet &&
+      kvclient.Get(kWarbleKey + parent_id).empty()) {
+    VLOG(google::ERROR)
+        << "WARBLE REQUEST: Reply ID is invalid. Request failed.";
+    return false;
+  }
 
-    // std::string id = kvclient.Get(warbleids);
+  // Return false if user is not registered
+  if (!UserExists(username)) {
+    VLOG(google::ERROR)
+        << "WARBLE REQUEST: User is not registered. Request failed.";
+    return false;
+  }
 
-    // // If id is empty string, means this is the first warble
-    // int integer_id = 0;
-    // if (id != "")
-    //     integer_id = stoi(id);
+  // Default warble_id is "0"
+  std::string latest_warble_id = kDefaultWarbleID;
 
-    // integer_id++;
-    // id = std::to_string(integer_id);
-    // kvclient.Remove(warbleids);
-    // kvclient.Put(warbleids, id);
+  // Check if allowed to add update function to keyvalue store
+  // To-do - add an update function in database for this
 
-    // // const std::string new_warble = "WARBLE" + id;
-    // // kvclient.Put(new_warble, text);
+  // If latest warble ID exists, retrieve it
+  if (!kvclient.Get(kLatestWarbleID).empty())
+    latest_warble_id = kvclient.Get(kLatestWarbleID).at(0);
 
-    // Warble warble;
-    // warble.set_username(username);
-    // warble.set_text(text);
-    // warble.set_id(id);
-    // if (reply_to_warble_id != -1)
-    //     warble.set_parent_id(std::to_string(reply_to_warble_id));
+  // Increment latest warble ID, remove the previous, and reinsert the updated
+  // one into key-value store
+  int latest_warble_id_as_int = stoi(latest_warble_id);
+  latest_warble_id_as_int++;
+  latest_warble_id = std::to_string(latest_warble_id_as_int);
+  kvclient.Remove(kLatestWarbleID);
+  kvclient.Put(kLatestWarbleID, latest_warble_id);
 
-    // std::string value;
-    // warble.SerializeToString(&value);
+  // Create new warble and serialize
+  Warble *warble = new Warble;
 
-    // kvclient.Put("WARBLE" + id, value);
+  struct timeval time;
+  gettimeofday(&time, NULL);
+  Timestamp *timestamp = new Timestamp;
+  timestamp->set_seconds(time.tv_sec);
+  timestamp->set_useconds(time.tv_usec);
+  warble->set_allocated_timestamp(timestamp);
+  warble->set_username(username);
+  warble->set_text(text);
+  warble->set_id(latest_warble_id);
+  std::string serialized_warble_string;
 
-    //serialized to string ->
-    // if (reply_to_warble_id != 0)
-    // {
-    //     const std::string reply_warble_key = "WARBLE" + reply_to_warble_id;
-    //     kvclient.Put(new_warble, text);
-    // }
-    return true;
+  // If given, set parent_id and call helper to add new warble to threads of
+  // parent warbles
+  if (parent_id != kStringNotSet) {
+    warble->set_parent_id(parent_id);
+    warble->SerializeToString(&serialized_warble_string);
+    kvclient.Put(kWarbleParents + latest_warble_id, parent_id);
+    std::vector<std::string> parent_warbles =
+        kvclient.Get(kWarbleParents + latest_warble_id);
+    AddWarbleToParent(parent_warbles, serialized_warble_string);
+  }
+
+  else
+    warble->SerializeToString(&serialized_warble_string);
+
+  // Add new serialized warble to database and return warble
+  kvclient.Put(kWarbleKey + latest_warble_id, serialized_warble_string);
+  warble_reply.set_allocated_warble(warble);
+
+  return true;
+}
+
+// Helper function to recursive add
+void WarbleFunctions::AddWarbleToParent(std::vector<std::string> parent_ids,
+                                        std::string serialized_warble) {
+  dylanwarble::KeyValueStoreClient kvclient(grpc::CreateChannel(
+      "localhost:50001", grpc::InsecureChannelCredentials()));
+
+  if (parent_ids.empty()) return;
+
+  std::string parent_id = parent_ids[0];
+  AddWarbleToParent(kvclient.Get(kWarbleParents + parent_id),
+                    serialized_warble);
+  kvclient.Put(kWarbleKey + parent_id, serialized_warble);
+
+  return;
 }
 
 // Reads the user's profiles
-std::string WarbleFunctions::Profile(std::string username)
-{
-    // dylanwarble::KeyValueStoreClient kvclient(grpc::CreateChannel(
-    //     "localhost:50001", grpc::InsecureChannelCredentials()));
+bool WarbleFunctions::Profile(std::string username,
+                              std::vector<std::string> &followers,
+                              std::vector<std::string> &following) {
+  // Key-value store stub
+  dylanwarble::KeyValueStoreClient kvclient(grpc::CreateChannel(
+      "localhost:50001", grpc::InsecureChannelCredentials()));
 
-    // std::string followers;
-    // std::string following;
+  // Return error if user does not exist
+  if (!UserExists(username)) {
+    VLOG(google::ERROR) << "PROFILE REQUEST: The user does not exist."
+                        << std::endl;
+    return false;
+  }
 
-    // std::string userFollowersKey = "FOLLOWERS" + username;
-    // std::string userFollowingKey = "FOLLOWING" + username;
+  // Retrieve followers and following from key-value store
+  followers = kvclient.Get(kFollowersKey + username);
+  following = kvclient.Get(kFollowingKey + username);
 
-    // following = kvclient.Get(userFollowersKey);
-
-    // std::cerr << "HERE: " << following << std::endl;
-
-    // return following;
+  VLOG(google::INFO) << "PROFILE REQUEST: User profile successfully returned.";
+  return true;
 }
 
-} // namespace dylanwarble
+}  // namespace dylanwarble

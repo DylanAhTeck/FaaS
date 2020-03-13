@@ -16,8 +16,7 @@
 //#include "../kvstore/kvstore.grpc.pb.h"
 #include "kvstore.grpc.pb.h"
 
-namespace dylanwarble
-{
+namespace dylanwarble {
 
 using grpc::Channel;
 using grpc::ClientContext;
@@ -32,12 +31,12 @@ using kvstore::PutRequest;
 using kvstore::RemoveReply;
 using kvstore::RemoveRequest;
 
-class KeyValueStoreClient
-{
-public:
+class KeyValueStoreClient {
+ public:
   // Initializes client with function stubs
   KeyValueStoreClient(std::shared_ptr<Channel> channel)
       : stub_(KeyValueStore::NewStub(channel)) {}
+
   // Sends PUT request with key,value variables to call kvstore_server API
   // Returns true if remove was successful
   bool Put(const std::string &key, const std::string &value);
@@ -50,8 +49,8 @@ public:
   // key is not present in the store
   std::vector<std::string> Get(const std::string &key);
 
-private:
+ private:
   std::unique_ptr<KeyValueStore::Stub> stub_;
 };
 
-} // namespace dylanwarble
+}  // namespace dylanwarble

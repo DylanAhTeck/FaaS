@@ -8,13 +8,12 @@
 
 //#include "../kvstore/kvstore.grpc.pb.h"
 #include "kvstore_client.h"
+#include "enums.h"
 #include "kvstore.grpc.pb.h"
-namespace dylanwarble
-{
+namespace dylanwarble {
 
 bool KeyValueStoreClient::Put(const std::string &key,
-                              const std::string &value)
-{
+                              const std::string &value) {
   // Data we are sending to the server.
   PutRequest request;
   request.set_value(value);
@@ -31,14 +30,12 @@ bool KeyValueStoreClient::Put(const std::string &key,
   Status status = stub_->put(&context, request, &reply);
 
   // Act upon its status.
-  if (status.ok())
-    return true;
+  if (status.ok()) return true;
 
   return false;
 }
 
-bool KeyValueStoreClient::Remove(const std::string &key)
-{
+bool KeyValueStoreClient::Remove(const std::string &key) {
   // Data we are sending to the server.
   RemoveRequest request;
   request.set_key(key);
@@ -54,15 +51,12 @@ bool KeyValueStoreClient::Remove(const std::string &key)
   Status status = stub_->remove(&context, request, &reply);
 
   // Act upon its status.
-  if (status.ok())
-    return true;
+  if (status.ok()) return true;
 
   return false;
 }
 
-std::vector<std::string> KeyValueStoreClient::Get(const std::string &key)
-{
-
+std::vector<std::string> KeyValueStoreClient::Get(const std::string &key) {
   ClientContext context;
 
   std::shared_ptr<ClientReaderWriter<GetRequest, GetReply>> stream(
@@ -75,17 +69,15 @@ std::vector<std::string> KeyValueStoreClient::Get(const std::string &key)
 
   GetReply reply;
   std::vector<std::string> response;
-  while (stream->Read(&reply))
-  {
-    response.push_back(reply.value());
+  while (stream->Read(&reply)) {
+    std::string element(reply.value());
+    response.push_back(element);
   }
   Status status = stream->Finish();
 
-  if (status.ok())
-    return response;
+  if (status.ok()) return response;
 
-  std::vector<std::string> empty;
-  return empty;
+  return std::vector<std::string>();
 
   // Context for the client. It could be used to convey extra information to
   // the server and/or tweak certain RPC behaviors.
@@ -114,27 +106,28 @@ std::vector<std::string> KeyValueStoreClient::Get(const std::string &key)
   // return "";
 }
 
-} // namespace dylanwarble
+}  // namespace dylanwarble
 
-int main(int argc, char **argv)
-{
-  dylanwarble::KeyValueStoreClient kvclient(grpc::CreateChannel(
-      "localhost:50001", grpc::InsecureChannelCredentials()));
+// int main(int argc, char **argv)
+// {
+//   dylanwarble::KeyValueStoreClient kvclient(grpc::CreateChannel(
+//       "localhost:50001", grpc::InsecureChannelCredentials()));
 
-  //Random order of functions for quick initial test
-  std::vector<std::string> response = kvclient.Get("hep");
-  for (int i = 0; i < response.size(); i++)
-    std::cout << response[i] << std::endl;
-  kvclient.Put("hi", "hi");
-  kvclient.Put("hi", "hello");
-  response = kvclient.Get("hi");
-  for (int i = 0; i < response.size(); i++)
-    std::cout << response[i] << std::endl;
-  kvclient.Remove("hi");
+//   //Random order of functions for quick initial test
+//   std::vector<std::string> response;
 
-  response = kvclient.Get("hi");
-  for (int i = 0; i < response.size(); i++)
-    std::cout << response[i] << std::endl;
+//   // kvclient.Put("hi", "hi");
+//   // kvclient.Put("hi", "hello");
 
-  return 0;
-}
+//   response = kvclient.Get(dylanwarble::kFollowersKey + "de");
+//   for (int i = 0; i < response.size(); i++)
+//     std::cout << response[i] << " ";
+//   std::cout << std::endl;
+//   // kvclient.Remove("hi");
+
+//   // response = kvclient.Get("hi");
+//   // for (int i = 0; i < response.size(); i++)
+//   //   std::cout << "2" << response[i] << std::endl;
+
+//   return 0;
+// }
