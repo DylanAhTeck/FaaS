@@ -72,7 +72,7 @@ class FuncServiceImpl final : public FuncService::Service {
   void HookInitialWarbleFunctions();
 
  private:
-  std::vector<Event> event_table;
+  std::vector<Event> event_table_;
 };
 
 }  // namespace dylanwarble
