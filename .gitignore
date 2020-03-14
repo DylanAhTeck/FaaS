@@ -4,6 +4,9 @@
 /.vscode
 /glog-0.3.5
 /gflags-2.2.1
+
+.DS_Store
+
 v0.3.5.tar.gz
 v2.2.1.tar.gz
 
