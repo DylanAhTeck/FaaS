@@ -1,99 +1,160 @@
 # csci499_DylanAhTeck
 
-Steps:
+This repository contains my implementation of the Function-as-a-Service Flatform *Func* and the *Warble* social network platform it services. Func is intended to provide a very basic FaaS platform like AWS Lambda or Google Cloud Functions, and Warble is intended to have the same basic functionality of Twitter.
 
-- Clone git repository
-  \$ git clone https://github.com/DylanAhTeck/csci499_DylanAhTeck.git
-- cd into csci499_DylanAhTeck root directry
-  \$ cd csci499_DylanAhTeck
-- Run vagrant machine
-  $ vagrant up
+A service operator will register a function f and its associated event type t, and when your FaaS platform receives a request that matches event type t it will pass that request to f for processing.  Functions that are executed in this manner have no persistent state, so Func will also provide access to a key-value store for the functions to store their data.
+
+Using this FaaS functionality, you will build an implementation of Warble with a command-line interface, which will enable Twitter-like functionality.  Users of Warble will register for user accounts on Warble (though we will not be concerned with authentication and security), post “warbles” (akin to tweets), follow other users, and be followed by other users.  They will be able to reply to warbles (either their own or those of other users).
+
+## Installing Project and Dependencies
+
+Follow the steps below to install the project and all required dependencies on your machine. 
+
+### Clone git repository and open Vagrant virtual machine
+
+Clone git repository
+'''bash
+$ git clone https://github.com/DylanAhTeck/csci499_DylanAhTeck.git
+'''
+Navigate into csci499_DylanAhTeck root directory
+'''bash
+$ cd csci499_DylanAhTeck
+'''
+
+With vagrant installed on Host OS, run vagrant machine and navigate to shared folder
+'''bash
+$ vagrant up
 $ vagrant ssh
+$ cd ../../vagrant
+'''
 
-- Find shared folder
-  cd ../../vagrant
+### Install Make, CMake and other useful tools
 
-Installing dependencies
-
-Make and CMake:
+Make and CMake
+'''bash
 $ sudo apt-get install build-essential autoconf libtool pkg-config cmake
 $ sudo apt-get update
+'''
 
-Clone GRPC (from source):
+### Clone and install GRPC (from source)
 
+'''bash
 $ sudo git clone -b v1.27.3 https://github.com/grpc/grpc
 $ cd grpc
-\$ sudo git submodule update --init
+$ sudo git submodule update --init
+'''
 
 Build with CMake
+'''bash
 $ cmake .
 $ sudo make install
+'''
 
 Install protobuf
+'''bash
 $ cd third_party/protobuf
 $ sudo make install
+'''
 
-Gtests:
+### Clone and install gtest (Google Tests)
 
-Download latest release from lates:
-wget https://github.com/google/googletest/archive/release-1.8.0.tar.gz
+Download repository and install in root directory
 
-Run:
-
+'''bash
+$ wget https://github.com/google/googletest/archive/release-1.8.0.tar.gz
 $ tar xzf release-1.8.0.tar.gz
 $ cd googletest-release-1.8.0
 $ cmake -DBUILD_SHARED_LIBS=ON .
 $ make
-\$ sudo make install
+$ sudo make install
+'''
 
-Glog and Gflags:
+### Clone and install gflag (Google Flags) and glog (Google Log)
 
-In root directory:
+Download repository and install in root directory
 
-Download:
+'''bash
 wget https://github.com/schuhschuh/gflags/archive/v2.2.1.tar.gz
 wget https://github.com/google/glog/archive/v0.3.5.tar.gz
-
-Unzip:
 tar -xvzf v0.3.5.tar.gz
 tar -xvzf v2.2.1.tar.gz
+'''bash
 
-From root directory, cd to glog-0.3.5 root directory and run CMake:
+From root directory, navigate to glog-0.3.5 directory and run CMake to build glog
 
+'''bash
 $ cd glog-0.3.5
 $ cmake .
-\$ sudo make install
+$ sudo make install
+'''
 
-From root directory, cd to gflags-2.2.1 root directory and run CMake:
+From root directory, cd to gflags-2.2.1 directory and run CMake to build gflag:
 
+'''bash
 $ cd gflags-2.2.1
 $ cmake .
-\$ sudo make install
+$ sudo make install
+'''bash
 
-Boost:
+### Clone and install Boost (for command-line argument parsing)
 
-From root directory, install boost:
+'''bash
+$ sudo apt install libboost-all-dev
+'''
 
-sudo apt install libboost-all-dev
+## Compiling and running services
 
 Compile program:
 
 Run make in src directory
-\$ make
+'''bash
+$ make
+'''
 
 To run func service:
-\$ ./func_server
+'''bash
+$ ./func_server
+'''
 
 To run key-value store service:
-\$ ./kvstore_server
+'''bash
+$ ./kvstore_server
+'''
 
 To run command-line client:
-\$ ./clclient [flags]
+'''bash
+$ ./clclient [flags]
+'''
 
-Flags and Logging:
-
-Set the appropriate flags via command-line environment variables before the executable.
+Note: 
+Set the appropriate glog flags via command-line environment variables before the executable for logging. 
 
 For example:
-
+'''bash
 GLOG_v=7 GLOG_logtostderr=1 ./func_server
+'''
+
+## Compiling and running services
+
+The command-line client, func service and key-value store service each have a suite of google tests that 
+is automatically compiled using the make command. 
+**Note: **  each test requires the a *new* instance of the other services to be running
+
+To run func service test:
+'''bash
+$ ./func_server_test
+'''
+
+To run key-value store test:
+'''bash
+$ ./kvstore_server_test
+'''
+
+To run command-line client test:
+'''bash
+$ ./clclient_test
+'''
+
+
+
+
