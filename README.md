@@ -140,17 +140,17 @@ is automatically compiled using the make command.
 
 **Note: each test requires a *new* instance of the other services to be running before being executed.**
 
-To run func service test:
+Run tests for Func and Warble functionality
 ```bash
-$ ./func_server_test
+$ ./warble_server_test
 ```
 
-To run key-value store test:
+Run tests for key-value store
 ```bash
-$ ./kvstore_server_test
+$ ./database_test
 ```
 
-To run command-line client test:
+Run tests for command-line functionality
 ```bash
-$ ./clclient_test
+$ ./func_client_test
 ```
