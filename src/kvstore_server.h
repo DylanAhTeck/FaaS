@@ -3,6 +3,8 @@
 #ifndef SRC_KVSTORE_SERVER_H_
 #define SRC_KVSTORE_SERVER_H_
 
+#include <gflags/gflags.h>
+#include <glog/logging.h>
 #include <grpcpp/grpcpp.h>
 
 #include <iostream>

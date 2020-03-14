@@ -102,7 +102,7 @@ void RunServer() {
 int main(int argc, char **argv) {
   // Set google logging
   google::InitGoogleLogging(argv[0]);
-  FLAGS_logtostderr = 1;
+
   // Run server
   RunServer();
   return 0;

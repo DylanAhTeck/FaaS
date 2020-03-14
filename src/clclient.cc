@@ -286,8 +286,6 @@ int main(int argc, char *argv[]) {
 
   // Initialize Google's logging library.
   google::InitGoogleLogging(argv[0]);
-  // Set FLAGS_logtostderr automatically
-  FLAGS_logtostderr = 1;
 
   try {
     // Use boost library to parse command-line

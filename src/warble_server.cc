@@ -191,7 +191,7 @@ bool WarbleFunctions::PostWarble(std::string username, std::string text,
   warble_reply->set_allocated_warble(warble);
 
   VLOG(google::INFO)
-      << "WARBLE REQUEST: the new warble was successfully posted";
+      << "WARBLE REQUEST: the new warble was successfully posted.";
 
   return true;
 }

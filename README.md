@@ -3,10 +3,12 @@
 Steps:
 
 - Clone git repository
+  \$ git clone https://github.com/DylanAhTeck/csci499_DylanAhTeck.git
 - cd into csci499_DylanAhTeck root directry
+  \$ cd csci499_DylanAhTeck
 - Run vagrant machine
-  vagrant up
-  vagrant ssh
+  $ vagrant up
+$ vagrant ssh
 
 - Find shared folder
   cd ../../vagrant
@@ -14,22 +16,22 @@ Steps:
 Installing dependencies
 
 Make and CMake:
-sudo apt-get install build-essential autoconf libtool pkg-config cmake
-sudo apt-get update
+$ sudo apt-get install build-essential autoconf libtool pkg-config cmake
+$ sudo apt-get update
 
 Clone GRPC (from source):
 
 $ sudo git clone -b v1.27.3 https://github.com/grpc/grpc
- $ cd grpc
+$ cd grpc
 \$ sudo git submodule update --init
 
 Build with CMake
 $ cmake .
- $ sudo make install
+$ sudo make install
 
 Install protobuf
 $ cd third_party/protobuf
- $ sudo make install
+$ sudo make install
 
 Gtests:
 
@@ -38,13 +40,11 @@ wget https://github.com/google/googletest/archive/release-1.8.0.tar.gz
 
 Run:
 
-tar xzf release-1.8.0.tar.gz
-cd googletest-release-1.8.0
-
-cd into gtest file and run:
-
-sudo cmake CMakeLists.txt
-sudo make install
+$ tar xzf release-1.8.0.tar.gz
+$ cd googletest-release-1.8.0
+$ cmake -DBUILD_SHARED_LIBS=ON .
+$ make
+\$ sudo make install
 
 Glog and Gflags:
 
@@ -60,15 +60,15 @@ tar -xvzf v2.2.1.tar.gz
 
 From root directory, cd to glog-0.3.5 root directory and run CMake:
 
- $ cd glog-0.3.5
- $ cmake .
- $ sudo make install
+$ cd glog-0.3.5
+$ cmake .
+\$ sudo make install
 
 From root directory, cd to gflags-2.2.1 root directory and run CMake:
 
- $ cd gflags-2.2.1
- $ cmake .
- $ sudo make install
+$ cd gflags-2.2.1
+$ cmake .
+\$ sudo make install
 
 Boost:
 
@@ -76,36 +76,24 @@ From root directory, install boost:
 
 sudo apt install libboost-all-dev
 
+Compile program:
 
-Running Program:
+Run make in src directory
+\$ make
 
-To set to log level 7 in command line for func and kv service:
+To run func service:
+\$ ./func_server
 
-GLOG_v=7 ./func_server
+To run key-value store service:
+\$ ./kvstore_server
 
-To set in clclient use -v 7 as part of command
+To run command-line client:
+\$ ./clclient [flags]
 
+Flags and Logging:
 
+Set the appropriate flags via command-line environment variables before the executable.
 
+For example:
 
-To install pip for cpplint:
-
-Start by updating the package list using the following command:
-
-sudo apt update
-Use the following command to install pip for Python 3:
-
-sudo apt install python3-pip
-The command above will also install all the dependencies required for building Python modules.
-
-Once the installation is complete, verify the installation by checking the pip version:
-
-pip3 --version
-
-Then install cpplint:
-
-pip3 install cpplint
-
-GRPC:
-
-Protobuf:
+GLOG_v=7 GLOG_logtostderr=1 ./func_server

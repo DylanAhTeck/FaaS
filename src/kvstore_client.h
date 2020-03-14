@@ -10,10 +10,9 @@
 #include <string>
 #include <vector>
 
-#include "kvstore.grpc.pb.h" //NOLINT
+#include "kvstore.grpc.pb.h"  //NOLINT
 
-namespace dylanwarble
-{
+namespace dylanwarble {
 
 using grpc::Channel;
 using grpc::ClientContext;
@@ -29,9 +28,8 @@ using kvstore::RemoveReply;
 using kvstore::RemoveRequest;
 
 // Provides an interface to call key-value store service
-class KeyValueStoreClient
-{
-public:
+class KeyValueStoreClient {
+ public:
   // Initializes client with function stubs
   explicit KeyValueStoreClient(std::shared_ptr<Channel> channel)
       : stub_(KeyValueStore::NewStub(channel)) {}
@@ -48,11 +46,11 @@ public:
   // key is not present in the store
   std::vector<std::string> Get(const std::string &key);
 
-private:
+ private:
   // Service stub
   std::unique_ptr<KeyValueStore::Stub> stub_;
 };
 
-} // namespace dylanwarble
+}  // namespace dylanwarble
 
-#endif // SRC_KVSTORE_CLIENT_H_
+#endif  // SRC_KVSTORE_CLIENT_H_

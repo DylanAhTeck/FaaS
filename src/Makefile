@@ -77,7 +77,7 @@ func_client_test: func_client_test.o func.pb.o func.grpc.pb.o func_client.o warb
 	$(PROTOC) -I $(PROTOS_PATH) --cpp_out=. $<
 
 clean:
-	rm -f *.o *.pb.cc *.pb.h kvstore_server kvstore_client func_server func_client warble_server database clclient
+	rm -f *.o *.pb.cc *.pb.h kvstore_server func_server database_test warble_server_test func_client_test 
 
 
 # The following is to test your system and ensure a smoother experience.

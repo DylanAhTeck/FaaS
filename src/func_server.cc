@@ -1,23 +1,20 @@
 // Copyright 2020 Dylan Ah Teck
 
-#include "func_server.h" //NOLINT
+#include "func_server.h"  //NOLINT
 
-namespace dylanwarble
-{
+namespace dylanwarble {
 
 // Allows a function to be added to Func service
 // Return Status::OK if successful, Status::CANCELLED if not
 Status FuncServiceImpl::hook(ServerContext *context,
                              const HookRequest *hookrequest,
-                             HookReply *hookreply)
-{
+                             HookReply *hookreply) {
   int event_type = hookrequest->event_type();
   const std::string event_function = hookrequest->event_function();
 
-  if (event_type < 0 || event_type > event_table_.size())
-  {
+  if (event_type < 0 || event_type > event_table_.size()) {
     VLOG(google::ERROR)
-        << "HOOK REQUEST: attempting to hook invalid Event ID. Failed.";
+        << "HOOK REQUEST: Attempting to hook invalid Event ID. Failed.";
     return Status::CANCELLED;
   }
 
@@ -25,9 +22,8 @@ Status FuncServiceImpl::hook(ServerContext *context,
   Event new_event(event_type, event_function, true);
 
   // If new event_type, must be the next largest available event_type
-  if (event_table_.size() == event_type)
-  {
-    VLOG(google::INFO) << "HOOK REQUEST: new event successfully hooked.";
+  if (event_table_.size() == event_type) {
+    VLOG(google::INFO) << "HOOK REQUEST: New event successfully hooked.";
     event_table_.push_back(new_event);
     return Status::OK;
   }
@@ -35,8 +31,7 @@ Status FuncServiceImpl::hook(ServerContext *context,
   Event current_event = event_table_[event_type];
 
   // Fail if Event ID is currently used by a hooked function
-  if (current_event.hooked == true)
-  {
+  if (current_event.hooked == true) {
     VLOG(google::ERROR)
         << "HOOK REQUEST: Event ID is already being used. Failed.";
     return Status::CANCELLED;
@@ -45,7 +40,7 @@ Status FuncServiceImpl::hook(ServerContext *context,
   // If the current Event ID has been unhooked, set the event at proper index to
   // new event
   event_table_[event_type] = new_event;
-  VLOG(google::INFO) << "HOOK REQUEST: new event successfully hooked.";
+  VLOG(google::INFO) << "HOOK REQUEST: New event successfully hooked.";
   return Status::OK;
 }
 
@@ -53,22 +48,19 @@ Status FuncServiceImpl::hook(ServerContext *context,
 // Return Status::OK if successful, Status::CANCELLED if not
 Status FuncServiceImpl::unhook(ServerContext *context,
                                const UnhookRequest *unhookrequest,
-                               UnhookReply *unhookreply)
-{
+                               UnhookReply *unhookreply) {
   int event_type = unhookrequest->event_type();
 
   // Fail if unhooking an invalid Event ID
-  if (event_type < 0 || event_type >= event_table_.size())
-  {
+  if (event_type < 0 || event_type >= event_table_.size()) {
     VLOG(google::ERROR)
-        << "UNHOOK REQUEST: attempting to unhook invalid Event ID. Failed.";
+        << "UNHOOK REQUEST: Attempting to unhook invalid Event ID. Failed.";
     return Status::CANCELLED;
   }
 
   // Fail if unhooking an Event that is already unhooked
   Event current_event = event_table_[event_type];
-  if (current_event.hooked == false)
-  {
+  if (current_event.hooked == false) {
     VLOG(google::WARNING)
         << "UNHOOK REQUEST: Event ID already unhooked. Failed.";
     return Status::CANCELLED;
@@ -76,7 +68,7 @@ Status FuncServiceImpl::unhook(ServerContext *context,
 
   // Set Event hooked status to false if valid request
   event_table_[event_type].hooked = false;
-  VLOG(google::INFO) << "UNHOOK REQUEST: event successfully unhooked.";
+  VLOG(google::INFO) << "UNHOOK REQUEST: Event successfully unhooked.";
   return Status::OK;
 }
 
@@ -84,8 +76,7 @@ Status FuncServiceImpl::unhook(ServerContext *context,
 
 // Calls Warble's RegisterUser function and returns Status::OK
 // if successful returns Status::OK, else returns Status::CANCELLED
-Status ProcessRegisterUserRequest(const google::protobuf::Any payload)
-{
+Status ProcessRegisterUserRequest(const google::protobuf::Any payload) {
   RegisteruserRequest request;
   WarbleFunctions warble_service;
 
@@ -102,8 +93,7 @@ Status ProcessRegisterUserRequest(const google::protobuf::Any payload)
 // Returns Status::OK if successful, else returns Status::CANCELLED
 Status ProcessWarbleRequest(const google::protobuf::Any payload,
                             google::protobuf::Any *return_payload,
-                            EventReply *eventreply)
-{
+                            EventReply *eventreply) {
   // Unpack message
   WarbleRequest request;
   WarbleFunctions warble_service;
@@ -121,8 +111,7 @@ Status ProcessWarbleRequest(const google::protobuf::Any payload,
       warble_service.PostWarble(username, text, reply_to_warble, warble_reply);
 
   // Return status if warble function was unsuccessful
-  if (!success)
-    return Status::CANCELLED;
+  if (!success) return Status::CANCELLED;
 
   // Package and send reply
   return_payload->PackFrom(*warble_reply);
@@ -133,8 +122,7 @@ Status ProcessWarbleRequest(const google::protobuf::Any payload,
 
 // Calls Warble's Follow function and returns Status::OK
 // if successful returns Status::OK, else returns Status::CANCELLED
-Status ProcessFollowRequest(const google::protobuf::Any payload)
-{
+Status ProcessFollowRequest(const google::protobuf::Any payload) {
   FollowRequest request;
   WarbleFunctions warble_service;
   payload.UnpackTo(&request);
@@ -151,8 +139,7 @@ Status ProcessFollowRequest(const google::protobuf::Any payload)
 // Status::OK if successful, else returns Status::CANCELLED
 Status ProcessReadRequest(const google::protobuf::Any payload,
                           google::protobuf::Any *return_payload,
-                          EventReply *eventreply)
-{
+                          EventReply *eventreply) {
   ReadRequest request;
   Warble warble;
   WarbleFunctions warble_service;
@@ -162,16 +149,14 @@ Status ProcessReadRequest(const google::protobuf::Any payload,
   std::string id = request.warble_id();
 
   // Warble's Read Function stores the warble threads in vector pointer
-  if (warble_service.Read(id, warble_thread) != true)
-  {
+  if (warble_service.Read(id, warble_thread) != true) {
     return Status::CANCELLED;
   }
 
   ReadReply reply;
 
   // Add Warble to ReadRequest's repeated Warble Message field
-  for (int i = 0; i < warble_thread->size(); i++)
-  {
+  for (int i = 0; i < warble_thread->size(); i++) {
     Warble *warble = reply.add_warbles();
     warble->set_id(warble_thread->at(i)->id());
     warble->set_text(warble_thread->at(i)->text());
@@ -197,8 +182,7 @@ Status ProcessReadRequest(const google::protobuf::Any payload,
 // EventReply Returns Status::OK if successful, else returns Status::CANCELLED
 Status ProcessProfileRequest(const google::protobuf::Any payload,
                              google::protobuf::Any *return_payload,
-                             EventReply *eventreply)
-{
+                             EventReply *eventreply) {
   ProfileRequest request;
   WarbleFunctions warble_service;
   payload.UnpackTo(&request);
@@ -213,12 +197,10 @@ Status ProcessProfileRequest(const google::protobuf::Any payload,
 
   // Add followers and following vector to ProfileRequest's message fields
   ProfileReply reply;
-  for (int i = 0; i < followers->size(); i++)
-  {
+  for (int i = 0; i < followers->size(); i++) {
     reply.add_followers(followers->at(i));
   }
-  for (int i = 0; i < following->size(); i++)
-  {
+  for (int i = 0; i < following->size(); i++) {
     reply.add_following(following->at(i));
   }
 
@@ -233,14 +215,12 @@ Status ProcessProfileRequest(const google::protobuf::Any payload,
 // Return Status::OK if successful, Status::CANCELLED if not
 Status FuncServiceImpl::event(ServerContext *context,
                               const EventRequest *eventrequest,
-                              EventReply *eventreply)
-{
+                              EventReply *eventreply) {
   const google::protobuf::Any payload = eventrequest->payload();
   int eventid = eventrequest->event_type();
 
   // Return Status::CANCELLED if Event ID is not a hooked function
-  if (eventid < 0 || eventid >= event_table_.size())
-  {
+  if (eventid < 0 || eventid >= event_table_.size()) {
     VLOG(google::ERROR) << "EVENT REQUEST: Event ID is invalid. Failed.";
   }
 
@@ -249,43 +229,36 @@ Status FuncServiceImpl::event(ServerContext *context,
   WarbleFunctions warble_service;
 
   // Call Processing function depending on Event ID
-  switch (eventid)
-  {
-  case kRegisterUserID:
-  {
-    delete return_payload;
-    return ProcessRegisterUserRequest(payload);
-  }
+  switch (eventid) {
+    case kRegisterUserID: {
+      delete return_payload;
+      return ProcessRegisterUserRequest(payload);
+    }
 
-  case kWarbleID:
-  {
-    return ProcessWarbleRequest(payload, return_payload, eventreply);
-  }
+    case kWarbleID: {
+      return ProcessWarbleRequest(payload, return_payload, eventreply);
+    }
 
-  case kFollowUserID:
-  {
-    delete return_payload;
-    return ProcessFollowRequest(payload);
-  }
+    case kFollowUserID: {
+      delete return_payload;
+      return ProcessFollowRequest(payload);
+    }
 
-  case kReadID:
-  {
-    return ProcessReadRequest(payload, return_payload, eventreply);
-  }
+    case kReadID: {
+      return ProcessReadRequest(payload, return_payload, eventreply);
+    }
 
-  case kProfileID:
-  {
-    return ProcessProfileRequest(payload, return_payload, eventreply);
-  }
+    case kProfileID: {
+      return ProcessProfileRequest(payload, return_payload, eventreply);
+    }
 
-  default:
-    return Status::CANCELLED;
+    default:
+      return Status::CANCELLED;
   }
 }
 
 // Sets up the Func Server and hooks the initial Warble functions
-void RunServerAndHookWarbleFunctions()
-{
+void RunServerAndHookWarbleFunctions() {
   std::string server_address("0.0.0.0:50000");
   FuncServiceImpl service;
 
@@ -308,8 +281,7 @@ void RunServerAndHookWarbleFunctions()
 }
 
 // Registers the allowed warble functions
-void FuncServiceImpl::HookInitialWarbleFunctions()
-{
+void FuncServiceImpl::HookInitialWarbleFunctions() {
   // Creates the Event structs
   Event registeruser(kRegisterUserID, kRegisterUserFunctionName, true);
   Event warble(kWarbleID, kWarbleFunctionName, true);
@@ -327,19 +299,16 @@ void FuncServiceImpl::HookInitialWarbleFunctions()
   std::cout << "Setup: hooked the following Warble functions ... " << std::endl;
 
   // Use cout not VLOG since this always needs to be shown
-  for (int i = 0; i < 5; i++)
-  {
+  for (int i = 0; i < 5; i++) {
     std::cout << i << ") " << event_table_[i].event_function << std::endl;
   }
 }
 
-} // namespace dylanwarble
+}  // namespace dylanwarble
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   // Initialize Google's logging library.
   google::InitGoogleLogging(argv[0]);
-  FLAGS_logtostderr = 1;
 
   // Includes initial setup of warble functions
   dylanwarble::RunServerAndHookWarbleFunctions();
