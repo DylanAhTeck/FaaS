@@ -2,9 +2,17 @@
 /grpc
 /googletest
 /.vscode
+/glog-0.3.5
+/gflags-2.2.1
+v0.3.5.tar.gz
+v2.2.1.tar.gz
 
 *.grpc.pb.o
 *.grpc.pb.h
 *.pb.h
 *.pb.o
 *.o
+*.py
+
+clclient
+func_server
