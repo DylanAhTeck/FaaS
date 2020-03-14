@@ -71,7 +71,7 @@ $ sudo make install
 
 ### Clone and install gflag (Google Flags) and glog (Google Log)
 
-Download repository and install in root directory
+Download repositories
 
 ```bash
 wget https://github.com/schuhschuh/gflags/archive/v2.2.1.tar.gz
@@ -138,7 +138,7 @@ GLOG_v=7 GLOG_logtostderr=1 ./func_server
 The command-line client, func service and key-value store service each have a suite of google tests that 
 is automatically compiled using the make command. 
 
-**Note: each test requires a *new* instance of the other services to be running **
+**Note: each test requires a *new* instance of the other services to be running before being executed.**
 
 To run func service test:
 ```bash
