@@ -2,9 +2,9 @@
 
 This repository contains my implementation of the Function-as-a-Service Flatform *Func* and the *Warble* social network platform it services. Func is intended to provide a very basic FaaS platform like AWS Lambda or Google Cloud Functions, and Warble is intended to have the same basic functionality of Twitter.
 
-A service operator will register a function **f** and its associated event type **t**, and when the FaaS platform receives a request that matches event type **t** it will pass that request to **f** for processing.  Functions that are executed in this manner have no persistent state, so Func will also provide access to a key-value store for the functions to store their data.
+The service operator can register a function **f** and its associated event type **t**, and when the FaaS platform receives the request that matches event type **t** it will pass that request to **f** for processing.  Functions that are executed in this manner have no persistent state, so Func provides access to a key-value store for the functions to store their data.
 
-This FaaS functionality will be accesseded through a command-line interface, which will enable Twitter-like functionality.  Users of Warble can register for user accounts on Warble, post “warbles” (akin to tweets), follow other users, and be followed by other users.  They can also reply to warbles (either their own or those of other users).
+This FaaS functionality can be accesseded through a command-line interface, which will enable Twitter-like functionality.  Users of Warble can register for user accounts on Warble, post “warbles” (akin to tweets), follow other users, and be followed by other users.  They can also reply to warbles (either their own or those of other users).
 
 ## Installing Project and Dependencies
 
@@ -88,7 +88,7 @@ $ cmake .
 $ sudo make install
 ```
 
-From root directory, cd to gflags-2.2.1 directory and run CMake to build gflag:
+From root directory, cd to gflags-2.2.1 directory and run CMake to build gflag
 
 ```bash
 $ cd gflags-2.2.1
@@ -104,10 +104,10 @@ $ sudo apt install libboost-all-dev
 
 ## Compiling and running services
 
-Compile program:
+Navigate to source directory and build executables using Make
 
-Run make in src directory
 ```bash
+$ cd src
 $ make
 ```
 
@@ -126,19 +126,19 @@ To run command-line client:
 $ ./clclient [flags]
 ```
 
-Note: 
-Set the appropriate glog flags via command-line environment variables before the executable for logging. 
+**Note:Set the appropriate glog flags via command-line environment variables before the executable for logging.**
 
 For example:
 ```bash
 GLOG_v=7 GLOG_logtostderr=1 ./func_server
 ```
 
-## Compiling and running services
+## Compiling and running Google Tests
 
 The command-line client, func service and key-value store service each have a suite of google tests that 
 is automatically compiled using the make command. 
-**Note: **  each test requires the a *new* instance of the other services to be running
+
+**Note: each test requires a *new* instance of the other services to be running **
 
 To run func service test:
 ```bash
