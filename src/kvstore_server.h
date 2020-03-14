@@ -1,5 +1,8 @@
 // Copyright 2020 Dylan Ah Teck
 
+#ifndef SRC_KVSTORE_SERVER_H_
+#define SRC_KVSTORE_SERVER_H_
+
 #include <grpcpp/grpcpp.h>
 
 #include <iostream>
@@ -52,3 +55,5 @@ class KeyValueStoreServiceImpl final : public KeyValueStore::Service {
 };
 
 }  // namespace dylanwarble
+
+#endif  // SRC_KVSTORE_SERVER_H_"

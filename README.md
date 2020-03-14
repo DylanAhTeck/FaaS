@@ -8,6 +8,19 @@ sudo apt install libboost-all-dev
 
 Google Test:
 
+Download latest release:
+wget https://github.com/google/googletest/archive/release-1.8.0.tar.gz
+
+Run: 
+
+tar xzf release-1.8.0.tar.gz
+cd googletest-release-1.8.0
+
+cd into gtest file and run: 
+
+sudo cmake CMakeLists.txt
+sudo make install
+
 Glog:
 
 In root directory:

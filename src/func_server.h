@@ -1,14 +1,16 @@
 // Copyright 2020 Dylan Ah Teck
+#ifndef SRC_FUNC_SERVER_H_
+#define SRC_FUNC_SERVER_H_
 
 #include <glog/logging.h>
 #include <grpcpp/grpcpp.h>
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <memory> 
 
-#include "func.grpc.pb.h" //NOLINT
+#include "func.grpc.pb.h"   //NOLINT
 #include "warble_server.h"  //NOLINT
 
 using grpc::Server;
@@ -74,3 +76,5 @@ class FuncServiceImpl final : public FuncService::Service {
 };
 
 }  // namespace dylanwarble
+
+#endif  // SRC_FUNC_SERVER_H_

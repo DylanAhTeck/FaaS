@@ -136,7 +136,7 @@ void ProcessProfileRequest(struct Payload *p,
     for (int i = 0; i < cr->followers.size(); i++) {
       std::cout << i << ") " << cr->followers[i] << std::endl;
     }
-    std::cout << "Following" << std::endl;
+    std::cout << "Following:" << std::endl;
     for (int i = 0; i < cr->following.size(); i++) {
       std::cout << i << ") " << cr->following[i] << std::endl;
     }

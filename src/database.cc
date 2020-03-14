@@ -19,6 +19,11 @@ bool Database::Put(std::string key, std::string value) {
   } else {
     umap_.insert(std::make_pair(key, std::vector<std::string>(1, value)));
   }
+  // Check that umap now has key
+  auto check = umap_.find(key);
+  if (check == umap_.end()) {
+    return false;
+  }
 
   return true;
 }
@@ -46,7 +51,7 @@ std::vector<std::string> Database::Get(std::string key) {
   return values;
 }
 
-// Removes all values of key, returns true if successful
+// Removes all values of key, returns true
 bool Database::Remove(std::string key) {
   // Locks mutex - only current thread can access map
   const std::lock_guard<std::mutex> lock(mut);
@@ -58,6 +63,12 @@ bool Database::Remove(std::string key) {
   // Erase the element pointed by iterator if key value pair exists
   if (got != umap_.end()) {
     umap_.erase(got);
+  }
+
+  // Check that umap does not have key
+  auto check = umap_.find(key);
+  if (check != umap_.end()) {
+    return false;
   }
 
   return true;

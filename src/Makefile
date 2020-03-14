@@ -35,9 +35,10 @@ GRPC_CPP_PLUGIN_PATH ?= `which $(GRPC_CPP_PLUGIN)`
 PROTOS_PATH = ../protos
 
 vpath %.proto $(PROTOS_PATH)
+
 #Note to self - *.pb.o file must come before *.grpc.pb.o in compilation
 
-all: system-check clclient kvstore_server func_server  #func_client kvstore_client warble_server
+all: system-check clclient kvstore_server func_server database_test warble_server_test func_client_test 
 
 clclient: func.pb.o func.grpc.pb.o warble.pb.o warble.grpc.pb.o func_client.o  clclient.o -lboost_program_options -lglog
 	$(CXX) $^ $(LDFLAGS) -o $@
@@ -45,22 +46,28 @@ clclient: func.pb.o func.grpc.pb.o warble.pb.o warble.grpc.pb.o func_client.o  c
 grpc_headers: kvstore.pb.o kvstore.grpc.pb.o func.pb.o func.grpc.pb.o warble.pb.o warble.grpc.pb.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
-kvstore_server: kvstore.pb.o kvstore.grpc.pb.o kvstore_server.o database.o -lglog #kvstore_client.o #helper.o
+kvstore_server: kvstore.pb.o kvstore.grpc.pb.o kvstore_server.o database.o -lglog 
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 kvstore_client: kvstore.pb.o kvstore.grpc.pb.o kvstore_client.o 
 	$(CXX) $^ $(LDFLAGS) -o $@
 
-warble_server: warble.pb.o warble.grpc.pb.o warble_server.o kvstore.pb.o kvstore.grpc.pb.o kvstore_client.o #helper.o
+warble_server: warble.pb.o warble.grpc.pb.o warble_server.o kvstore.pb.o kvstore.grpc.pb.o kvstore_client.o 
 	$(CXX) $^ $(LDFLAGS) -o $@
 
-func_server: func.pb.o func.grpc.pb.o func_server.o warble.pb.o warble.grpc.pb.o kvstore.pb.o kvstore.grpc.pb.o  kvstore_client.o warble_server.o database.o -lglog #helper.o
+func_server: func.pb.o func.grpc.pb.o func_server.o warble.pb.o warble.grpc.pb.o kvstore.pb.o kvstore.grpc.pb.o  kvstore_client.o warble_server.o database.o -lglog 
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 func_client: func.pb.o func.grpc.pb.o func_client.o warble.grpc.pb.o warble.pb.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
-database: database.o
+database_test: database_test.o database.o  -lgtest -lgtest_main 
+	$(CXX) $^ $(LDFLAGS) -o $@
+
+warble_server_test: warble_server_test.o warble.pb.o warble.grpc.pb.o warble_server.o kvstore.pb.o kvstore.grpc.pb.o kvstore_client.o -lgtest -lgtest_main -lglog
+	$(CXX) $^ $(LDFLAGS) -o $@
+
+func_client_test: func_client_test.o func.pb.o func.grpc.pb.o func_client.o warble.grpc.pb.o warble.pb.o -lgtest -lgtest_main -lglog
 	$(CXX) $^ $(LDFLAGS) -o $@
 	
 %.grpc.pb.cc: %.proto

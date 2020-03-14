@@ -1,5 +1,8 @@
 // Copyright 2020 Dylan Ah Teck
 
+#ifndef SRC_FUNC_CLIENT_H_
+#define SRC_FUNC_CLIENT_H_
+
 #include <glog/logging.h>
 #include <grpcpp/grpcpp.h>
 
@@ -7,9 +10,9 @@
 #include <string>
 #include <vector>
 
-#include "enums.h"          // NOLINT
-#include "func.grpc.pb.h"   // NOLINT
-#include "warble.grpc.pb.h" // NOLINT
+#include "enums.h"           // NOLINT
+#include "func.grpc.pb.h"    // NOLINT
+#include "warble.grpc.pb.h"  // NOLINT
 
 using grpc::Channel;
 using grpc::ClientContext;
@@ -36,11 +39,9 @@ using warble::Warble;
 using warble::WarbleReply;
 using warble::WarbleRequest;
 
-namespace dylanwarble
-{
+namespace dylanwarble {
 // NOLINT Internal datastructure to package data from clclient to func_client
-struct Payload
-{
+struct Payload {
   int event_type;
   std::string event_function;
 
@@ -51,8 +52,7 @@ struct Payload
   std::string to_follow;
 };
 // Internal datastructure to package response data
-struct CommandResponse
-{
+struct CommandResponse {
   CommandResponse() : success(false) {}
 
   int event_type;
@@ -62,7 +62,6 @@ struct CommandResponse
   int timestamp_u_seconds;
 
   std::string warbleID;
-
   std::string username;
   std::string reply_id;
   std::string warble_text;
@@ -79,15 +78,14 @@ struct CommandResponse
 };
 // Class to provide func interface/decoupling
 // Used for clclient to call
-class FuncClient
-{
-public:
+class FuncClient {
+ public:
   // Creates a new client
   explicit FuncClient(std::shared_ptr<Channel> channel)
       : stub_(FuncService::NewStub(channel)) {}
 
   // Hooks an event with int event_type
-  bool Hook(const int event_type, const std::string &event_function);
+  bool Hook(const int event_type, const std::string event_function);
 
   // Unooks an event with int event_type
   bool Unhook(const int event_type);
@@ -95,8 +93,10 @@ public:
   // Requests an event with parameters stored in Payload by clclient
   void Event(const int event_type, const Payload *p, CommandResponse *r);
 
-private:
+ private:
   std::unique_ptr<FuncService::Stub> stub_;
 };
 
-} // namespace dylanwarble
+}  // namespace dylanwarble
+
+#endif  // SRC_FUNC_CLIENT_H_

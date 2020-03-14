@@ -1,7 +1,7 @@
 // Copyright 2020 Dylan Ah Teck
 
-#include "kvstore_client.h" //NOLINT
-#include "enums.h" //NOLINT
+#include "kvstore_client.h"   //NOLINT
+#include "enums.h"            //NOLINT
 #include "kvstore.grpc.pb.h"  //NOLINT
 namespace dylanwarble {
 

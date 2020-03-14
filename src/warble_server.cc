@@ -1,7 +1,6 @@
 // Copyright 2020 Dylan Ah Teck
 
-#include "warble_server.h" //NOLINT
-#include <string>
+#include "warble_server.h"  //NOLINT
 
 namespace dylanwarble {
 // Helper: returns true if user already exists in key-value store
@@ -78,21 +77,23 @@ bool WarbleFunctions::Follow(std::string username, std::string user_to_follow) {
   const std::string userFollowingKey = kFollowingKey + username;
   kvclient.Put(userFollowingKey, user_to_follow);
 
-  VLOG(google::INFO) << username << " began following " << user_to_follow
+  VLOG(google::INFO) << "FOLLOW REQUEST: " << username
+                     << " successfully began following " << user_to_follow
                      << ".";
   return true;
 }
 
 // Reads a warble thread from the given id
 bool WarbleFunctions::Read(std::string id,
-                           std::vector<Warble *> &warble_thread) {
+                           std::vector<Warble *> *warble_thread) {
   // Key-value store stub
   dylanwarble::KeyValueStoreClient kvclient(grpc::CreateChannel(
       "localhost:50001", grpc::InsecureChannelCredentials()));
 
   // Return error if id does exist
   if (kvclient.Get(kWarbleKey + id).empty()) {
-    VLOG(google::ERROR) << "The warble does not exist. Request failed.";
+    VLOG(google::ERROR)
+        << "READ REQUEST: The warble does not exist. Request failed.";
     return false;
   }
 
@@ -103,8 +104,11 @@ bool WarbleFunctions::Read(std::string id,
   for (int i = 0; i < serialized_warbles.size(); i++) {
     Warble *warble = new Warble;
     if (warble->ParseFromString(serialized_warbles[i]) == false) return false;
-    warble_thread.push_back(warble);
+    warble_thread->push_back(warble);
   }
+
+  VLOG(google::INFO)
+      << "READ REQUEST: The warble thread was successfully read.";
 
   return true;
 }
@@ -113,7 +117,7 @@ bool WarbleFunctions::Read(std::string id,
 // warble
 bool WarbleFunctions::PostWarble(std::string username, std::string text,
                                  std::string parent_id,
-                                 WarbleReply &warble_reply) {
+                                 WarbleReply *warble_reply) {
   dylanwarble::KeyValueStoreClient kvclient(grpc::CreateChannel(
       "localhost:50001", grpc::InsecureChannelCredentials()));
 
@@ -184,12 +188,15 @@ bool WarbleFunctions::PostWarble(std::string username, std::string text,
 
   // Add new serialized warble to database and return warble
   kvclient.Put(kWarbleKey + latest_warble_id, serialized_warble_string);
-  warble_reply.set_allocated_warble(warble);
+  warble_reply->set_allocated_warble(warble);
+
+  VLOG(google::INFO)
+      << "WARBLE REQUEST: the new warble was successfully posted";
 
   return true;
 }
 
-// Recursive helper function to recursively add new Warble to parents
+// Recursive helper function for Warble to recursively add new Warble to parents
 void WarbleFunctions::AddWarbleToParent(std::vector<std::string> parent_ids,
                                         std::string serialized_warble) {
   dylanwarble::KeyValueStoreClient kvclient(grpc::CreateChannel(
@@ -207,8 +214,8 @@ void WarbleFunctions::AddWarbleToParent(std::vector<std::string> parent_ids,
 
 // Reads the user's profiles
 bool WarbleFunctions::Profile(std::string username,
-                              std::vector<std::string> &followers,
-                              std::vector<std::string> &following) {
+                              std::vector<std::string> *followers,
+                              std::vector<std::string> *following) {
   // Key-value store stub
   dylanwarble::KeyValueStoreClient kvclient(grpc::CreateChannel(
       "localhost:50001", grpc::InsecureChannelCredentials()));
@@ -221,8 +228,8 @@ bool WarbleFunctions::Profile(std::string username,
   }
 
   // Retrieve followers and following from key-value store
-  followers = kvclient.Get(kFollowersKey + username);
-  following = kvclient.Get(kFollowingKey + username);
+  *followers = kvclient.Get(kFollowersKey + username);
+  *following = kvclient.Get(kFollowingKey + username);
 
   VLOG(google::INFO) << "PROFILE REQUEST: User profile successfully returned.";
   return true;

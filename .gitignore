@@ -12,3 +12,7 @@ v2.2.1.tar.gz
 *.pb.h
 *.pb.o
 *.o
+*.py
+
+clclient
+func_server

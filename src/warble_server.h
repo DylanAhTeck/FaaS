@@ -1,16 +1,19 @@
 // Copyright 2020 Dylan Ah Teck
 
+#ifndef SRC_WARBLE_SERVER_H_
+#define SRC_WARBLE_SERVER_H_
+
 #include <glog/logging.h>
 #include <grpcpp/grpcpp.h>
 #include <sys/time.h>
 #include <time.h>
 
+#include <string>
 #include <vector>
 
-#include "enums.h"
-#include "kvstore_client.h"
-#include "warble.grpc.pb.h"
-
+#include "enums.h"           //NOLINT
+#include "kvstore_client.h"  //NOLINT
+#include "warble.grpc.pb.h"  //NOLINT
 
 using grpc::Server;
 using grpc::ServerBuilder;
@@ -41,17 +44,17 @@ class WarbleFunctions {
   // Posts a new warble by specific user and returns WarbleReply with id of new
   // warble
   bool PostWarble(std::string username, std::string text, std::string parent_id,
-                  WarbleReply &warble_reply);
+                  WarbleReply *warble_reply);
 
   // Lets specified user follow another user
   bool Follow(std::string username, std::string user_to_follow);
 
   // Reads a warble thread from the given id
-  bool Read(std::string id, std::vector<Warble *> &vector_warble);
+  bool Read(std::string id, std::vector<Warble *> *vector_warble);
 
   // Returns a warble profile
-  bool Profile(std::string username, std::vector<std::string> &followers,
-               std::vector<std::string> &following);
+  bool Profile(std::string username, std::vector<std::string> *followers,
+               std::vector<std::string> *following);
 
   // Helper functions
  private:
@@ -62,3 +65,5 @@ class WarbleFunctions {
                          std::string serialized_warble);
 };
 }  // namespace dylanwarble
+
+#endif  //  SRC_WARBLE_SERVER_H_

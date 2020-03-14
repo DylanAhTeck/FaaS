@@ -1,5 +1,8 @@
 // Copyright 2020 Dylan Ah Teck
 
+#ifndef SRC_KVSTORE_CLIENT_H_
+#define SRC_KVSTORE_CLIENT_H_
+
 #include <grpcpp/grpcpp.h>
 
 #include <iostream>
@@ -7,7 +10,10 @@
 #include <string>
 #include <vector>
 
-#include "kvstore.grpc.pb.h"
+#include "kvstore.grpc.pb.h"  //NOLINT
+
+#ifndef SRC_KVSTORE_CLIENT_H_
+
 namespace dylanwarble {
 
 using grpc::Channel;
@@ -27,7 +33,7 @@ using kvstore::RemoveRequest;
 class KeyValueStoreClient {
  public:
   // Initializes client with function stubs
-  KeyValueStoreClient(std::shared_ptr<Channel> channel)
+  explicit KeyValueStoreClient(std::shared_ptr<Channel> channel)
       : stub_(KeyValueStore::NewStub(channel)) {}
 
   // Sends PUT request with key,value variables to call Key-Value Store server
@@ -48,3 +54,5 @@ class KeyValueStoreClient {
 };
 
 }  // namespace dylanwarble
+
+#endif  // SRC_KVSTORE_CLIENT_H_

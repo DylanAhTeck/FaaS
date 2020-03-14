@@ -1,9 +1,10 @@
 // Copyright 2020 Dylan Ah Teck
+
 #include "func_client.h"  // NOLINT
 
 namespace dylanwarble {
 // Allows service to specify that a function is valid
-bool FuncClient::Hook(const int event_type, const std::string &event_function) {
+bool FuncClient::Hook(const int event_type, const std::string event_function) {
   // Data we are sending to the server.
   HookRequest request;
   request.set_event_type(event_type);

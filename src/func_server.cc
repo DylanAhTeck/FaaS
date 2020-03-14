@@ -1,6 +1,6 @@
 // Copyright 2020 Dylan Ah Teck
 
-#include "func_server.h" //NOLINT
+#include "func_server.h"  //NOLINT
 
 namespace dylanwarble {
 
@@ -106,7 +106,7 @@ Status ProcessWarbleRequest(const google::protobuf::Any payload,
   std::string reply_to_warble = request.parent_id();
 
   // Call warble function
-  WarbleReply warble_reply;
+  WarbleReply *warble_reply = new WarbleReply;
   bool success =
       warble_service.PostWarble(username, text, reply_to_warble, warble_reply);
 
@@ -114,7 +114,8 @@ Status ProcessWarbleRequest(const google::protobuf::Any payload,
   if (!success) return Status::CANCELLED;
 
   // Package and send reply
-  return_payload->PackFrom(warble_reply);
+  return_payload->PackFrom(*warble_reply);
+  delete warble_reply;
   eventreply->set_allocated_payload(return_payload);
   return Status::OK;
 }
@@ -144,7 +145,7 @@ Status ProcessReadRequest(const google::protobuf::Any payload,
   WarbleFunctions warble_service;
   payload.UnpackTo(&request);
 
-  std::vector<Warble *> warble_thread;
+  std::vector<Warble *> *warble_thread = new std::vector<Warble *>;
   std::string id = request.warble_id();
 
   // Warble's Read Function stores the warble threads in vector pointer
@@ -155,20 +156,20 @@ Status ProcessReadRequest(const google::protobuf::Any payload,
   ReadReply reply;
 
   // Add Warble to ReadRequest's repeated Warble Message field
-  for (int i = 0; i < warble_thread.size(); i++) {
+  for (int i = 0; i < warble_thread->size(); i++) {
     Warble *warble = reply.add_warbles();
-    warble->set_id(warble_thread[i]->id());
-    warble->set_text(warble_thread[i]->text());
-    warble->set_parent_id(warble_thread[i]->parent_id());
-    warble->set_username(warble_thread[i]->username());
+    warble->set_id(warble_thread->at(i)->id());
+    warble->set_text(warble_thread->at(i)->text());
+    warble->set_parent_id(warble_thread->at(i)->parent_id());
+    warble->set_username(warble_thread->at(i)->username());
 
     // Add timestamp to warble as well
     Timestamp *timestamp_ptr = new Timestamp;
-    timestamp_ptr->set_seconds(warble_thread[i]->timestamp().seconds());
-    timestamp_ptr->set_useconds(warble_thread[i]->timestamp().useconds());
+    timestamp_ptr->set_seconds(warble_thread->at(i)->timestamp().seconds());
+    timestamp_ptr->set_useconds(warble_thread->at(i)->timestamp().useconds());
     warble->set_allocated_timestamp(timestamp_ptr);
 
-    delete warble_thread[i];
+    delete warble_thread->at(i);
   }
 
   return_payload->PackFrom(reply);
@@ -187,8 +188,8 @@ Status ProcessProfileRequest(const google::protobuf::Any payload,
   payload.UnpackTo(&request);
 
   std::string username = request.username();
-  std::vector<std::string> followers;
-  std::vector<std::string> following;
+  std::vector<std::string> *followers = new std::vector<std::string>;
+  std::vector<std::string> *following = new std::vector<std::string>;
 
   // Retrieve followers and following using Warble's Profile function
   if (warble_service.Profile(username, followers, following) == false)
@@ -196,10 +197,16 @@ Status ProcessProfileRequest(const google::protobuf::Any payload,
 
   // Add followers and following vector to ProfileRequest's message fields
   ProfileReply reply;
-  for (int i = 0; i < followers.size(); i++) reply.add_followers(followers[i]);
-  for (int i = 0; i < following.size(); i++) reply.add_following(following[i]);
+  for (int i = 0; i < followers->size(); i++) {
+    reply.add_followers(followers->at(i));
+  }
+  for (int i = 0; i < following->size(); i++) {
+    reply.add_following(following->at(i));
+  }
 
   return_payload->PackFrom(reply);
+  delete followers;
+  delete following;
   eventreply->set_allocated_payload(return_payload);
   return Status::OK;
 }
@@ -289,10 +296,11 @@ void FuncServiceImpl::HookInitialWarbleFunctions() {
   event_table.push_back(read);
   event_table.push_back(profile);
 
-  VLOG(google::INFO) << "Setup: hooked the following Warble functions ... ";
+  std::cout << "Setup: hooked the following Warble functions ... " << std::endl;
 
+  // Use cout not VLOG since this always needs to be shown
   for (int i = 0; i < 5; i++) {
-    VLOG(google::INFO) << i << ") " << event_table[i].event_function;
+    std::cout << i << ") " << event_table[i].event_function << std::endl;
   }
 }
 

@@ -1,13 +1,17 @@
 // Copyright 2020 Dylan Ah Teck
 
-#include <glog/logging.h>
-#include <mutex>
-#include <unordered_map>
-#include <vector>
-#include <iostream>
-#include <utility>
-#include <string>
+#ifndef SRC_DATABASE_H_
+#define SRC_DATABASE_H_
 
+#include <glog/logging.h>
+#include <iostream>
+#include <mutex>  //NOLINT
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
+#ifndef SRC_DATABASE_H_
 namespace dylanwarble {
 
 // Internal database data structure to implement thread-safe
@@ -29,3 +33,5 @@ class Database {
 };
 
 }  // namespace dylanwarble
+
+#endif  // SRC_DATABASE_H_
