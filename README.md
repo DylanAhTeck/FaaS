@@ -1,4 +1,4 @@
-# csci499_DylanAhTeck
+# FaaS
 
 This repository contains my implementation of the Function-as-a-Service Flatform *Func* and the *Warble* social network platform it services. Func is intended to provide a very basic FaaS platform like AWS Lambda or Google Cloud Functions, and Warble is intended to have the same basic functionality of Reddit.
 
@@ -14,11 +14,11 @@ Follow the steps below to install the project and all required dependencies on y
 
 Clone git repository
 ```bash
-$ git clone https://github.com/DylanAhTeck/csci499_DylanAhTeck.git
+$ git clone https://github.com/DylanAhTeck/FaaS.git
 ```
-Navigate into csci499_DylanAhTeck root directory
+Navigate into FaaS root directory
 ```bash
-$ cd csci499_DylanAhTeck
+$ cd FaaS
 ```
 
 With vagrant installed on Host OS, run vagrant machine and navigate to shared folder
