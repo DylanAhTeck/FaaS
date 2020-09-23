@@ -4,7 +4,7 @@ This repository contains my implementation of the Function-as-a-Service Flatform
 
 The service operator can register a function **f** and its associated event type **t**, and when the FaaS platform receives the request that matches event type **t** it will pass that request to **f** for processing.  Functions that are executed in this manner have no persistent state, so Func provides access to a key-value store for the functions to store their data.
 
-This FaaS functionality can be accesseded through a command-line interface, which will enable Twitter-like functionality.  Users of Warble can register for user accounts on Warble, post “warbles” (akin to Twitter tweets), follow other users, and be followed by other users.  They can also reply to warbles (either their own or those of other users).
+This FaaS functionality can be accesseded through a command-line interface, which will enable Twitter-like functionality.  Users of Warble can register for user accounts on Warble, post “warbles” (akin to Twitter tweets), follow other users, and be followed by other users.  They can also reply to warbles (either their own or those of other users). The system supports concurrent access by multiple users. 
 
 ## Installing Project and Dependencies
 
